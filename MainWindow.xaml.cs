@@ -19,6 +19,7 @@ using Microsoft.Win32;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Input;
 using DiplomProject.ViewModels;
+
 namespace DiplomProject
 {
     public partial class MainWindow : Window
@@ -40,231 +41,11 @@ namespace DiplomProject
         private void LoadData()
         {
             Objects = new ObservableCollection<Models.Object>(_context.Objects.Include(o => o.IdAddressNavigation).ToList());
-
             Services = new ObservableCollection<Service>(_context.Services.OrderBy(s => s.ServiceName).ToList());
             LoadEmployees();
             LoadObjects();
             LoadRates();
             LoadEmployeesPanel();
-        }
-
-        private void Export_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var employees = EmployeeDataGrid.ItemsSource.Cast<Employee>().ToList();
-                if (employees == null || !employees.Any())
-                {
-                    MessageBox.Show("Нет данных для экспорта", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    Filter = "Excel files (*.xlsx)|*.xlsx",
-                    FileName = $"Сотрудники_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
-                    DefaultExt = ".xlsx",
-                    Title = "Выберите место для сохранения файла"
-                };
-
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    using (var package = new ExcelPackage())
-                    {
-                        var worksheet = package.Workbook.Worksheets.Add("Сотрудники");
-
-                        string[] headers = { "№", "Фамилия", "Имя", "Отчество", "Телефон", "Email", "Метро",
-                                  "Дата приема", "Опыт", "График", "Заметки", "Комментарии" };
-
-                        for (int i = 0; i < headers.Length; i++)
-                        {
-                            worksheet.Cells[1, i + 1].Value = headers[i];
-                            worksheet.Cells[1, i + 1].Style.Font.Bold = true;
-                        }
-
-                        // Заполняем данные
-                        int row = 2;
-                        foreach (var emp in employees)
-                        {
-                            worksheet.Cells[row, 1].Value = emp.IdEmployee;
-                            worksheet.Cells[row, 2].Value = emp.IdFullnameNavigation.LastName;
-                            worksheet.Cells[row, 3].Value = emp.IdFullnameNavigation.FirstName;
-                            worksheet.Cells[row, 4].Value = emp.IdFullnameNavigation.MiddleName;
-                            worksheet.Cells[row, 5].Value = emp.Phone;
-                            worksheet.Cells[row, 6].Value = emp.Email;
-                            worksheet.Cells[row, 7].Value = emp.Metro;
-                            worksheet.Cells[row, 8].Value = emp.HireDate?.ToShortDateString();
-                            worksheet.Cells[row, 9].Value = emp.Experience;
-                            worksheet.Cells[row, 10].Value = emp.Schedules;
-                            worksheet.Cells[row, 11].Value = emp.Notes;
-                            worksheet.Cells[row, 12].Value = emp.Comments;
-                            row++;
-                        }
-
-                        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
-
-                        FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
-                        package.SaveAs(excelFile);
-
-                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}",
-                                      "Экспорт завершен",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}",
-                              "Ошибка",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Error);
-            }
-        }
-
-        private void ObjectExport_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var objects = ObjectDataGrid.ItemsSource?.Cast<ObjectViewModel>().ToList();
-                if (objects == null || !objects.Any())
-                {
-                    MessageBox.Show("Нет данных для экспорта", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    Filter = "Excel files (*.xlsx)|*.xlsx",
-                    FileName = $"Сотрудники_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
-                    DefaultExt = ".xlsx",
-                    Title = "Выберите место для сохранения файла"
-                };
-
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    using (var package = new ExcelPackage())
-                    {
-                        var worksheet = package.Workbook.Worksheets.Add("Сотрудники");
-
-                        string[] headers = { "№", "Наименование обЪекта", "Индекс", "Страна", "Город", "Улица", "Дом",
-                                  "Корпус", "Офис", "Полный Адрес" };
-
-                        for (int i = 0; i < headers.Length; i++)
-                        {
-                            worksheet.Cells[1, i + 1].Value = headers[i];
-                            worksheet.Cells[1, i + 1].Style.Font.Bold = true;
-                        }
-
-                        int row = 2;
-                        foreach (var ob in objects)
-                        {
-                            worksheet.Cells[row, 1].Value = ob.IdObject;
-                            worksheet.Cells[row, 2].Value = ob.ObjectName;
-                            worksheet.Cells[row, 3].Value = ob.PostalCode;
-                            worksheet.Cells[row, 4].Value = ob.Country;
-                            worksheet.Cells[row, 5].Value = ob.City;
-                            worksheet.Cells[row, 6].Value = ob.Street;
-                            worksheet.Cells[row, 7].Value = ob.Building;
-                            worksheet.Cells[row, 8].Value = ob.Corpus;
-                            worksheet.Cells[row, 9].Value = ob.Office;
-                            worksheet.Cells[row, 10].Value = ob.FullAddress;
-                            row++;
-                        }
-
-                        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
-
-                        FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
-                        package.SaveAs(excelFile);
-
-                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}",
-                                      "Экспорт завершен",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}",
-                              "Ошибка",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Error);
-            }
-        }
-
-        private void RateExport_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var rate = RateDataGrid.ItemsSource?.Cast<RateViewModel>().ToList();
-                if (rate == null || !rate.Any())
-                {
-                    MessageBox.Show("Нет данных для экспорта", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    Filter = "Excel files (*.xlsx)|*.xlsx",
-                    FileName = $"Сотрудники_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
-                    DefaultExt = ".xlsx",
-                    Title = "Выберите место для сохранения файла"
-                };
-
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    using (var package = new ExcelPackage())
-                    {
-                        var worksheet = package.Workbook.Worksheets.Add("Ставки");
-
-                        string[] headers = { "№", "Наименование обЪекта", "Адрес", "Должность", "Ставка" };
-
-                        for (int i = 0; i < headers.Length; i++)
-                        {
-                            worksheet.Cells[1, i + 1].Value = headers[i];
-                            worksheet.Cells[1, i + 1].Style.Font.Bold = true;
-                        }
-
-                        int row = 2;
-                        foreach (var r in rate)
-                        {
-                            worksheet.Cells[row, 1].Value = r.IdRate;
-                            worksheet.Cells[row, 2].Value = r.ObjectName;
-                            worksheet.Cells[row, 3].Value = r.Address;
-                            worksheet.Cells[row, 4].Value = r.ServiceName;
-                            worksheet.Cells[row, 5].Value = r.HourlyRate;
-                            row++;
-                        }
-
-                        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
-
-                        FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
-                        package.SaveAs(excelFile);
-
-                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}",
-                                      "Экспорт завершен",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}",
-                              "Ошибка",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Error);
-            }
         }
 
         private void ConfigureDataGridColumns()
@@ -325,19 +106,18 @@ namespace DiplomProject
                 {
                     case "ObjectName": e.Column.Header = "Объект"; break;
                     case "Address": e.Column.Header = "Адрес"; break;
-                    case "ServiceName": e.Column.Header = "Должность"; break;
+                    case "ServiceName": e.Column.Header = "Услуга"; break;
                     case "HourlyRate": e.Column.Header = "Ставка"; break;
                 }
             };
         }
-
 
         private void LoadEmployeesPanel()
         {
             EmployeesStackPanel.Children.Clear();
 
             var employees = _context.Employees
-                .Include(e => e.IdFullnameNavigation) 
+                .Include(e => e.IdFullnameNavigation)
                 .OrderBy(e => e.IdFullnameNavigation.LastName)
                 .ToList();
 
@@ -361,7 +141,6 @@ namespace DiplomProject
                     Orientation = Orientation.Vertical
                 };
 
-                // Добавляем элементы с информацией
                 employeeInfoPanel.Children.Add(new TextBlock
                 {
                     Text = $"ФИО: {fullName}",
@@ -384,129 +163,6 @@ namespace DiplomProject
 
                 EmployeesStackPanel.Children.Add(employeeBorder);
             }
-        }
-
-        public void UpdateButton_Click(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                var updatedEmployees = EmployeeDataGrid.ItemsSource.Cast<EmployeeViewModel>().ToList();
-
-                foreach (var employeeVM in updatedEmployees)
-                {
-                    var dbEmployee = _context.Employees
-                        .Include(emp => emp.IdFullnameNavigation)
-                        .FirstOrDefault(emp => emp.IdEmployee == employeeVM.IdEmployee);
-
-                    if (dbEmployee != null)
-                    {
-                        dbEmployee.Email = employeeVM.Email;
-                        dbEmployee.Phone = employeeVM.Phone;
-                        dbEmployee.Metro = employeeVM.Metro;
-                        dbEmployee.HireDate = employeeVM.HireDate;
-
-                        if (dbEmployee.IdFullnameNavigation != null)
-                        {
-                            dbEmployee.IdFullnameNavigation.LastName = employeeVM.LastName;
-                            dbEmployee.IdFullnameNavigation.FirstName = employeeVM.FirstName;
-                            dbEmployee.IdFullnameNavigation.MiddleName = employeeVM.MiddleName;
-                        }
-                    }
-                }
-
-                _context.SaveChanges();
-
-                LoadEmployees();
-                LoadEmployeesPanel(); 
-
-                MessageBox.Show("Данные успешно обновлены!", "Успех",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при обновлении: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-     
-
-        public class ObjectComboBoxItem
-        {
-            public int IdObject { get; set; }
-            public string ObjectName { get; set; }
-        }
-
-        private void SaveRateButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var ratesToSave = (IEnumerable<RateViewModel>)RateDataGrid.ItemsSource;
-
-                foreach (var rate in ratesToSave)
-                {
-                    var existingRate = _context.Rates
-                        .AsNoTracking()
-                        .FirstOrDefault(r => r.IdObject == rate.IdObject &&
-                                           r.IdService == rate.IdService &&
-                                           r.IdRate != rate.IdRate);
-
-                    if (existingRate != null)
-                    {
-                        var objectName = _context.Objects.Find(rate.IdObject)?.ObjectName ?? "Объект";
-                        var serviceName = _context.Services.Find(rate.IdService)?.ServiceName ?? "Должность";
-
-                        MessageBox.Show($"Ставка для {objectName} и {serviceName} уже существует",
-                                      "Дублирование данных");
-                        return;
-                    }
-
-                    if (rate.IdRate == 0) 
-                    {
-                        var newRate = new Rate
-                        {
-                            IdObject = rate.IdObject,
-                            IdService = rate.IdService,
-                            HourlyRate = rate.HourlyRate
-                        };
-                        _context.Rates.Add(newRate);
-                    }
-                    else 
-                    {
-                        var rateToUpdate = _context.Rates.Find(rate.IdRate);
-                        if (rateToUpdate != null)
-                        {
-                            rateToUpdate.IdObject = rate.IdObject;
-                            rateToUpdate.IdService = rate.IdService;
-                            rateToUpdate.HourlyRate = rate.HourlyRate;
-                        }
-                    }
-                }
-
-                _context.SaveChanges();
-                MessageBox.Show("Данные успешно сохранены");
-                LoadRates();
-            }
-            catch (DbUpdateException ex)
-            {
-                string errorDetails = GetExceptionDetails(ex);
-                MessageBox.Show($"Ошибка сохранения: {errorDetails}", "Ошибка");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка");
-            }
-        }
-
-        private string GetExceptionDetails(Exception ex)
-        {
-            string details = ex.Message;
-            var inner = ex.InnerException;
-            while (inner != null)
-            {
-                details += $"\n{inner.Message}";
-                inner = inner.InnerException;
-            }
-            return details;
         }
 
         private void LoadEmployees()
@@ -550,7 +206,6 @@ namespace DiplomProject
                 {
                     if (item is EmployeeViewModel employeeVM)
                     {
-                        // Находим сотрудника в БД
                         var employee = _context.Employees
                             .Include(e => e.IdFullnameNavigation)
                             .FirstOrDefault(e => e.IdEmployee == employeeVM.IdEmployee);
@@ -720,6 +375,7 @@ namespace DiplomProject
             ObjectDataGrid.BeginEdit();
             LoadRates();
         }
+
         private void SaveObjectButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -756,7 +412,6 @@ namespace DiplomProject
                     }
                     else
                     {
-                        // Обновляем существующий объект
                         existingObject.ObjectName = obj.ObjectName;
                         existingObject.IdAddressNavigation.PostalCode = obj.PostalCode;
                         existingObject.IdAddressNavigation.Country = obj.Country;
@@ -769,13 +424,11 @@ namespace DiplomProject
                 }
 
                 _context.SaveChanges();
-                //LoadObjects(); // Обновляем данные после сохранения
                 LoadData();
                 MessageBox.Show("Данные успешно сохранены");
             }
             catch (DbUpdateException ex)
             {
-                // Обработка ошибок, связанных с обновлением базы данных
                 var innerException = ex.InnerException;
                 while (innerException != null)
                 {
@@ -785,156 +438,7 @@ namespace DiplomProject
             }
             catch (Exception ex)
             {
-                // Обработка других ошибок
                 MessageBox.Show($"Ошибка при сохранении: {ex.Message}");
-            }
-        }
-
-
-        private void LoadRates()
-        {
-            var rates = _context.Rates
-                .Include(r => r.IdServiceNavigation)
-                .Include(r => r.IdObjectNavigation)
-                .ThenInclude(o => o.IdAddressNavigation)
-                .Select(r => new RateViewModel
-                {
-                    IdRate = r.IdRate,
-                    IdObject = r.IdObject,
-                    IdAddress = r.IdObjectNavigation.IdAddress,
-                    IdService = r.IdService,
-                    ObjectName = r.IdObjectNavigation.ObjectName,
-                    Address = $"{r.IdObjectNavigation.IdAddressNavigation.PostalCode}, " +
-                              $"{r.IdObjectNavigation.IdAddressNavigation.Country}, " +
-                              $"{r.IdObjectNavigation.IdAddressNavigation.City}, " +
-                              $"{r.IdObjectNavigation.IdAddressNavigation.Street}, " +
-                              $"{r.IdObjectNavigation.IdAddressNavigation.Building}",
-                    ServiceName = r.IdServiceNavigation.ServiceName,
-                    HourlyRate = r.HourlyRate
-                })
-                .ToList();
-
-            Rates = new ObservableCollection<RateViewModel>(rates);
-            RateDataGrid.ItemsSource = Rates;
-        }
-
-        ///
-        private void ObjectComboBoxInGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ComboBox comboBox && comboBox.SelectedItem is Models.Object selectedObject)
-            {
-                if (RateDataGrid.CurrentCell.Item is RateViewModel rate)
-                {
-                    rate.IdObject = selectedObject.IdObject;
-                    rate.ObjectName = selectedObject.ObjectName;
-                    rate.IdAddress = selectedObject.IdAddress;
-                    rate.Address = $"{selectedObject.IdAddressNavigation?.PostalCode}, " +
-                                  $"{selectedObject.IdAddressNavigation?.Country}, " +
-                                  $"{selectedObject.IdAddressNavigation?.City}, " +
-                                  $"{selectedObject.IdAddressNavigation?.Street}, " +
-                                  $"{selectedObject.IdAddressNavigation?.Building}";
-                }
-            }
-        }
-
-
-        private void AddRateButton_Click(object sender, RoutedEventArgs e)
-        {
-            var newRate = new RateViewModel
-            {
-                HourlyRate = 0.00m,
-                ServiceName = "Выберите должность",
-                ObjectName = "Выберите объект",
-                Address = "Адрес будет выбран автоматически"
-            };
-
-            Rates.Add(newRate);
-            RateDataGrid.ScrollIntoView(newRate);
-            RateDataGrid.CurrentCell = new DataGridCellInfo(RateDataGrid.Items[RateDataGrid.Items.Count - 1], RateDataGrid.Columns[0]);
-            RateDataGrid.BeginEdit();
-        }
-
-        private void RateDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
-        {
-            // Разрешаем редактирование только определенных колонок
-            if (e.Column.Header.ToString() != "Объект" &&
-                e.Column.Header.ToString() != "Должность" &&
-                e.Column.Header.ToString() != "Ставка")
-            {
-                e.Cancel = true;
-            }
-        }
-
-        private void DeleteRateButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedRate == null) return;
-
-            var result = MessageBox.Show("Вы уверены, что хотите удалить эту ставку?",
-                "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    if (_selectedRate.IdRate > 0) // Удаление существующей записи
-                    {
-                        var rateToDelete = _context.Rates.Find(_selectedRate.IdRate);
-                        if (rateToDelete != null)
-                        {
-                            _context.Rates.Remove(rateToDelete);
-                            _context.SaveChanges();
-                        }
-                    }
-
-                    // Удаление из DataGrid
-                    if (RateDataGrid.ItemsSource is ObservableCollection<RateViewModel> collection)
-                    {
-                        collection.Remove(_selectedRate);
-                    }
-                    else if (RateDataGrid.ItemsSource is IList<RateViewModel> list)
-                    {
-                        list.Remove(_selectedRate);
-                        RateDataGrid.ItemsSource = list;
-                    }
-
-                    MessageBox.Show("Ставка успешно удалена");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка при удалении ставки: {ex.Message}");
-                }
-            }
-        }
-
-
-        private void DeleteEmployeeButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (EmployeeDataGrid.SelectedItem == null)
-            {
-                MessageBox.Show("Выберите сотрудника для удаления");
-                return;
-            }
-
-            dynamic selected = EmployeeDataGrid.SelectedItem;
-            int id = selected.IdEmployee;
-
-            var result = MessageBox.Show("Вы уверены, что хотите удалить этого сотрудника?", "Подтверждение", MessageBoxButton.YesNo);
-            if (result == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    var employee = _context.Employees.Find(id);
-                    if (employee != null)
-                    {
-                        _context.Employees.Remove(employee);
-                        _context.SaveChanges();
-                        LoadEmployees();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка удаления: {ex.Message}");
-                }
             }
         }
 
@@ -969,6 +473,478 @@ namespace DiplomProject
             }
         }
 
+        private void LoadRates()
+        {
+            var rates = _context.Rates
+                .Include(r => r.IdServiceNavigation)
+                .Include(r => r.IdObjectNavigation)
+                .ThenInclude(o => o.IdAddressNavigation)
+                .Select(r => new RateViewModel
+                {
+                    IdRate = r.IdRate,
+                    IdObject = r.IdObject,
+                    IdAddress = r.IdObjectNavigation.IdAddress,
+                    IdService = r.IdService,
+                    ObjectName = r.IdObjectNavigation.ObjectName,
+                    Address = $"{r.IdObjectNavigation.IdAddressNavigation.PostalCode}, " +
+                              $"{r.IdObjectNavigation.IdAddressNavigation.Country}, " +
+                              $"{r.IdObjectNavigation.IdAddressNavigation.City}, " +
+                              $"{r.IdObjectNavigation.IdAddressNavigation.Street}, " +
+                              $"{r.IdObjectNavigation.IdAddressNavigation.Building}",
+                    ServiceName = r.IdServiceNavigation.ServiceName,
+                    HourlyRate = r.HourlyRate
+                })
+                .ToList();
+
+            Rates = new ObservableCollection<RateViewModel>(rates);
+            RateDataGrid.ItemsSource = Rates;
+        }
+
+        private void AddRateButton_Click(object sender, RoutedEventArgs e)
+        {
+            var newRate = new RateViewModel
+            {
+                HourlyRate = 0.00m,
+                ServiceName = "Выберите должность",
+                ObjectName = "Выберите объект",
+                Address = "Адрес будет выбран автоматически"
+            };
+
+            Rates.Add(newRate);
+            RateDataGrid.ScrollIntoView(newRate);
+            RateDataGrid.CurrentCell = new DataGridCellInfo(RateDataGrid.Items[RateDataGrid.Items.Count - 1], RateDataGrid.Columns[0]);
+            RateDataGrid.BeginEdit();
+        }
+
+        public ComboBox PositionComboBox { get; set; }
+
+
+        private void AddNewRate_Click(object sender, RoutedEventArgs e)
+        {
+            ServiceWindow serviceWindow = new ServiceWindow(_context, PositionComboBox); 
+            serviceWindow.Owner = this;
+            serviceWindow.ShowDialog();
+        }
+
+        private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is T)
+                    return (T)child;
+                else
+                {
+                    T childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
+        }
+
+        private void SaveRateButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var ratesToSave = (IEnumerable<RateViewModel>)RateDataGrid.ItemsSource;
+
+                foreach (var rate in ratesToSave)
+                {
+                    var existingRate = _context.Rates
+                        .AsNoTracking()
+                        .FirstOrDefault(r => r.IdObject == rate.IdObject &&
+                                           r.IdService == rate.IdService &&
+                                           r.IdRate != rate.IdRate);
+
+                    if (existingRate != null)
+                    {
+                        var objectName = _context.Objects.Find(rate.IdObject)?.ObjectName ?? "Объект";
+                        var serviceName = _context.Services.Find(rate.IdService)?.ServiceName ?? "Должность";
+
+                        MessageBox.Show($"Ставка для {objectName} и {serviceName} уже существует",
+                                      "Дублирование данных");
+                        return;
+                    }
+
+                    if (rate.IdRate == 0)
+                    {
+                        var newRate = new Rate
+                        {
+                            IdObject = rate.IdObject,
+                            IdService = rate.IdService,
+                            HourlyRate = rate.HourlyRate
+                        };
+                        _context.Rates.Add(newRate);
+                    }
+                    else
+                    {
+                        var rateToUpdate = _context.Rates.Find(rate.IdRate);
+                        if (rateToUpdate != null)
+                        {
+                            rateToUpdate.IdObject = rate.IdObject;
+                            rateToUpdate.IdService = rate.IdService;
+                            rateToUpdate.HourlyRate = rate.HourlyRate;
+                        }
+                    }
+                }
+
+                _context.SaveChanges();
+                MessageBox.Show("Данные успешно сохранены");
+                LoadRates();
+            }
+            catch (DbUpdateException ex)
+            {
+                string errorDetails = GetExceptionDetails(ex);
+                MessageBox.Show($"Ошибка сохранения: {errorDetails}", "Ошибка");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка");
+            }
+        }
+
+        private void DeleteRateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedRate == null) return;
+
+            var result = MessageBox.Show("Вы уверены, что хотите удалить эту ставку?",
+                "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    if (_selectedRate.IdRate > 0) 
+                    {
+                        var rateToDelete = _context.Rates.Find(_selectedRate.IdRate);
+                        if (rateToDelete != null)
+                        {
+                            _context.Rates.Remove(rateToDelete);
+                            _context.SaveChanges();
+                        }
+                    }
+
+                    if (RateDataGrid.ItemsSource is ObservableCollection<RateViewModel> collection)
+                    {
+                        collection.Remove(_selectedRate);
+                    }
+                    else if (RateDataGrid.ItemsSource is IList<RateViewModel> list)
+                    {
+                        list.Remove(_selectedRate);
+                        RateDataGrid.ItemsSource = list;
+                    }
+
+                    MessageBox.Show("Ставка успешно удалена");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при удалении ставки: {ex.Message}");
+                }
+            }
+        }
+
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var employees = EmployeeDataGrid.ItemsSource.Cast<Employee>().ToList();
+                if (employees == null || !employees.Any())
+                {
+                    MessageBox.Show("Нет данных для экспорта", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    FileName = $"Сотрудники_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                    DefaultExt = ".xlsx",
+                    Title = "Выберите место для сохранения файла"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    using (var package = new ExcelPackage())
+                    {
+                        var worksheet = package.Workbook.Worksheets.Add("Сотрудники");
+
+                        string[] headers = { "№", "Фамилия", "Имя", "Отчество", "Телефон", "Email", "Метро",
+                                  "Дата приема", "Опыт", "График", "Заметки", "Комментарии" };
+
+                        for (int i = 0; i < headers.Length; i++)
+                        {
+                            worksheet.Cells[1, i + 1].Value = headers[i];
+                            worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+                        }
+
+                        int row = 2;
+                        foreach (var emp in employees)
+                        {
+                            worksheet.Cells[row, 1].Value = emp.IdEmployee;
+                            worksheet.Cells[row, 2].Value = emp.IdFullnameNavigation.LastName;
+                            worksheet.Cells[row, 3].Value = emp.IdFullnameNavigation.FirstName;
+                            worksheet.Cells[row, 4].Value = emp.IdFullnameNavigation.MiddleName;
+                            worksheet.Cells[row, 5].Value = emp.Phone;
+                            worksheet.Cells[row, 6].Value = emp.Email;
+                            worksheet.Cells[row, 7].Value = emp.Metro;
+                            worksheet.Cells[row, 8].Value = emp.HireDate?.ToShortDateString();
+                            worksheet.Cells[row, 9].Value = emp.Experience;
+                            worksheet.Cells[row, 10].Value = emp.Schedules;
+                            worksheet.Cells[row, 11].Value = emp.Notes;
+                            worksheet.Cells[row, 12].Value = emp.Comments;
+                            row++;
+                        }
+
+                        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                        FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
+                        package.SaveAs(excelFile);
+
+                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}", "Экспорт завершен", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ObjectExport_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var objects = ObjectDataGrid.ItemsSource?.Cast<ObjectViewModel>().ToList();
+                if (objects == null || !objects.Any())
+                {
+                    MessageBox.Show("Нет данных для экспорта", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    FileName = $"Сотрудники_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                    DefaultExt = ".xlsx",
+                    Title = "Выберите место для сохранения файла"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    using (var package = new ExcelPackage())
+                    {
+                        var worksheet = package.Workbook.Worksheets.Add("Сотрудники");
+
+                        string[] headers = { "№", "Наименование обЪекта", "Индекс", "Страна", "Город", "Улица", "Дом",
+                                  "Корпус", "Офис", "Полный Адрес" };
+
+                        for (int i = 0; i < headers.Length; i++)
+                        {
+                            worksheet.Cells[1, i + 1].Value = headers[i];
+                            worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+                        }
+
+                        int row = 2;
+                        foreach (var ob in objects)
+                        {
+                            worksheet.Cells[row, 1].Value = ob.IdObject;
+                            worksheet.Cells[row, 2].Value = ob.ObjectName;
+                            worksheet.Cells[row, 3].Value = ob.PostalCode;
+                            worksheet.Cells[row, 4].Value = ob.Country;
+                            worksheet.Cells[row, 5].Value = ob.City;
+                            worksheet.Cells[row, 6].Value = ob.Street;
+                            worksheet.Cells[row, 7].Value = ob.Building;
+                            worksheet.Cells[row, 8].Value = ob.Corpus;
+                            worksheet.Cells[row, 9].Value = ob.Office;
+                            worksheet.Cells[row, 10].Value = ob.FullAddress;
+                            row++;
+                        }
+
+                        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                        FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
+                        package.SaveAs(excelFile);
+
+                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}",
+                                      "Экспорт завершен",
+                                      MessageBoxButton.OK,
+                                      MessageBoxImage.Information);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}",
+                              "Ошибка",
+                              MessageBoxButton.OK,
+                              MessageBoxImage.Error);
+            }
+        }
+
+        private void RateExport_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var rate = RateDataGrid.ItemsSource?.Cast<RateViewModel>().ToList();
+                if (rate == null || !rate.Any())
+                {
+                    MessageBox.Show("Нет данных для экспорта", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    FileName = $"Сотрудники_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                    DefaultExt = ".xlsx",
+                    Title = "Выберите место для сохранения файла"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    using (var package = new ExcelPackage())
+                    {
+                        var worksheet = package.Workbook.Worksheets.Add("Ставки");
+
+                        string[] headers = { "№", "Наименование обЪекта", "Адрес", "Должность", "Ставка" };
+
+                        for (int i = 0; i < headers.Length; i++)
+                        {
+                            worksheet.Cells[1, i + 1].Value = headers[i];
+                            worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+                        }
+
+                        int row = 2;
+                        foreach (var r in rate)
+                        {
+                            worksheet.Cells[row, 1].Value = r.IdRate;
+                            worksheet.Cells[row, 2].Value = r.ObjectName;
+                            worksheet.Cells[row, 3].Value = r.Address;
+                            worksheet.Cells[row, 4].Value = r.ServiceName;
+                            worksheet.Cells[row, 5].Value = r.HourlyRate;
+                            row++;
+                        }
+
+                        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                        FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
+                        package.SaveAs(excelFile);
+
+                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}",
+                                      "Экспорт завершен",
+                                      MessageBoxButton.OK,
+                                      MessageBoxImage.Information);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}",
+                              "Ошибка",
+                              MessageBoxButton.OK,
+                              MessageBoxImage.Error);
+            }
+        }
+
+        public void UpdateButton_Click(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                var updatedEmployees = EmployeeDataGrid.ItemsSource.Cast<EmployeeViewModel>().ToList();
+
+                foreach (var employeeVM in updatedEmployees)
+                {
+                    var dbEmployee = _context.Employees
+                        .Include(emp => emp.IdFullnameNavigation)
+                        .FirstOrDefault(emp => emp.IdEmployee == employeeVM.IdEmployee);
+
+                    if (dbEmployee != null)
+                    {
+                        dbEmployee.Email = employeeVM.Email;
+                        dbEmployee.Phone = employeeVM.Phone;
+                        dbEmployee.Metro = employeeVM.Metro;
+                        dbEmployee.HireDate = employeeVM.HireDate;
+
+                        if (dbEmployee.IdFullnameNavigation != null)
+                        {
+                            dbEmployee.IdFullnameNavigation.LastName = employeeVM.LastName;
+                            dbEmployee.IdFullnameNavigation.FirstName = employeeVM.FirstName;
+                            dbEmployee.IdFullnameNavigation.MiddleName = employeeVM.MiddleName;
+                        }
+                    }
+                }
+
+                _context.SaveChanges();
+
+                LoadEmployees();
+                LoadEmployeesPanel(); 
+
+                MessageBox.Show("Данные успешно обновлены!", "Успех",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при обновлении: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+     
+
+        public class ObjectComboBoxItem
+        {
+            public int IdObject { get; set; }
+            public string ObjectName { get; set; }
+        }
+
+        private string GetExceptionDetails(Exception ex)
+        {
+            string details = ex.Message;
+            var inner = ex.InnerException;
+            while (inner != null)
+            {
+                details += $"\n{inner.Message}";
+                inner = inner.InnerException;
+            }
+            return details;
+        }
+
+        private void ObjectComboBoxInGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is Models.Object selectedObject)
+            {
+                if (RateDataGrid.CurrentCell.Item is RateViewModel rate)
+                {
+                    rate.IdObject = selectedObject.IdObject;
+                    rate.ObjectName = selectedObject.ObjectName;
+                    rate.IdAddress = selectedObject.IdAddress;
+                    rate.Address = $"{selectedObject.IdAddressNavigation?.PostalCode}, " +
+                                  $"{selectedObject.IdAddressNavigation?.Country}, " +
+                                  $"{selectedObject.IdAddressNavigation?.City}, " +
+                                  $"{selectedObject.IdAddressNavigation?.Street}, " +
+                                  $"{selectedObject.IdAddressNavigation?.Building}";
+                }
+            }
+        }
+
+        private void RateDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+        {
+            if (e.Column.Header.ToString() != "Объект" &&
+                e.Column.Header.ToString() != "Должность" &&
+                e.Column.Header.ToString() != "Ставка")
+            {
+                e.Cancel = true;
+            }
+        }
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -1004,14 +980,12 @@ namespace DiplomProject
             {
                 var searchText = SearchObjectTextBox.Text.ToLower();
 
-                // Если строка поиска пустая - загружаем все объекты
                 if (string.IsNullOrWhiteSpace(searchText))
                 {
-                    LoadObjects(); // Используем существующий метод загрузки
+                    LoadObjects(); 
                     return;
                 }
 
-                // Фильтрация только при наличии текста поиска
                 var filtered = _context.Objects
                     .Include(o => o.IdAddressNavigation)
                     .Where(o =>
@@ -1019,7 +993,7 @@ namespace DiplomProject
                         (o.IdAddressNavigation.PostalCode != null && o.IdAddressNavigation.PostalCode.ToLower().Contains(searchText)) ||
                         (o.IdAddressNavigation.City != null && o.IdAddressNavigation.City.ToLower().Contains(searchText)) ||
                         (o.IdAddressNavigation.Street != null && o.IdAddressNavigation.Street.ToLower().Contains(searchText)))
-                    .Select(o => new ObjectViewModel // Используем ViewModel вместо анонимного типа
+                    .Select(o => new ObjectViewModel 
                     {
                         IdObject = o.IdObject,
                         ObjectName = o.ObjectName,
@@ -1043,6 +1017,11 @@ namespace DiplomProject
         }
 
         private void ExportImpor_Click(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
 
         }

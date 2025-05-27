@@ -38,13 +38,11 @@ public partial class diplomContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            // Загружаем конфигурацию из appsettings.json
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            // Получаем строку подключения
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             optionsBuilder.UseMySql(
