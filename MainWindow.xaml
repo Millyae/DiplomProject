@@ -16,8 +16,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
                         <Border Name="Border" BorderThickness="1,1,1,0" BorderBrush="#FF6A5ACD" CornerRadius="4,4,0,0" Margin="2,0">
-                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                            ContentSource="Header" Margin="12,4"/>
+                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" Margin="12,4"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
@@ -77,8 +76,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="DataGridCell">
-                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
-                         Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
                             <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" Margin="5"/>
                         </Border>
                     </ControlTemplate>
@@ -107,8 +105,7 @@
 
                 <Border Grid.Row="0" Background="#FF483D8B" CornerRadius="10,10,0,0" Height="40">
                     <Grid>
-                        <TextBlock Text="Employee Management System" Foreground="White" FontSize="16"
-                                  VerticalAlignment="Center" Margin="20,0" FontWeight="SemiBold"/>
+                        <TextBlock Text="Employee Management System" Foreground="White" FontSize="16" VerticalAlignment="Center" Margin="20,0" FontWeight="SemiBold"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="_" Width="40" Background="Transparent" Foreground="White"/>
                             <Button Content="✕" Width="40" Background="Transparent" Foreground="White" Cursor="" Click="ExitButton_Click"/>
@@ -126,8 +123,6 @@
                             </Grid.RowDefinitions>
                             <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
                                 <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
-                                    <MenuItem Header=" Обновить" Background="#FF483D8B" BorderBrush="#FF6A5ACD"/>
-                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD"/>
                                     <MenuItem Header="Выйти" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ExitButton_Click"/>
                                 </MenuItem>
                             </Menu>
@@ -154,7 +149,8 @@
                                     <MenuItem Header="Добавить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddButton_Click"/>
                                     <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="SaveButton_Click"/>
                                     <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteButton_Click"/>
-                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="Export_Click"/>
+                                    <MenuItem Header="Импорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="Import_Click"/>
+                                    <MenuItem Header="Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="Export_Click"/>
                                 </MenuItem>
                             </Menu>
                             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">

@@ -664,7 +664,7 @@ namespace DiplomProject
         {
             try
             {
-                var employees = EmployeeDataGrid.ItemsSource.Cast<Employee>().ToList();
+                var employees = EmployeeDataGrid.ItemsSource.Cast<EmployeeViewModel>().ToList();
                 if (employees == null || !employees.Any())
                 {
                     MessageBox.Show("Нет данных для экспорта", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -688,7 +688,7 @@ namespace DiplomProject
                         var worksheet = package.Workbook.Worksheets.Add("Сотрудники");
 
                         string[] headers = { "№", "Фамилия", "Имя", "Отчество", "Телефон", "Email", "Метро",
-                                  "Дата приема", "Опыт", "График", "Заметки", "Комментарии" };
+                          "Дата приема", "Опыт", "График", "Заметки", "Комментарии" };
 
                         for (int i = 0; i < headers.Length; i++)
                         {
@@ -700,9 +700,9 @@ namespace DiplomProject
                         foreach (var emp in employees)
                         {
                             worksheet.Cells[row, 1].Value = emp.IdEmployee;
-                            worksheet.Cells[row, 2].Value = emp.IdFullnameNavigation.LastName;
-                            worksheet.Cells[row, 3].Value = emp.IdFullnameNavigation.FirstName;
-                            worksheet.Cells[row, 4].Value = emp.IdFullnameNavigation.MiddleName;
+                            worksheet.Cells[row, 2].Value = emp.LastName;
+                            worksheet.Cells[row, 3].Value = emp.FirstName;
+                            worksheet.Cells[row, 4].Value = emp.MiddleName;
                             worksheet.Cells[row, 5].Value = emp.Phone;
                             worksheet.Cells[row, 6].Value = emp.Email;
                             worksheet.Cells[row, 7].Value = emp.Metro;
@@ -721,7 +721,6 @@ namespace DiplomProject
 
                         MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}", "Экспорт завершен", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
-
                 }
             }
             catch (Exception ex)
@@ -855,20 +854,155 @@ namespace DiplomProject
                         FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
                         package.SaveAs(excelFile);
 
-                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}",
-                                      "Экспорт завершен",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
+                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}", "Экспорт завершен", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
 
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}",
-                              "Ошибка",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}", "Ошибка", MessageBoxButton.OK,MessageBoxImage.Error);
+            }
+        }
+
+        private void Import_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    Title = "Выберите файл для импорта"
+                };
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    using (var package = new ExcelPackage(new FileInfo(openFileDialog.FileName)))
+                    {
+                        var worksheet = package.Workbook.Worksheets[0]; 
+                        var employees = new List<Employee>();
+
+                        for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+                        {
+                            try
+                            {
+                                var employee = new Employee
+                                {
+                                    IdFullnameNavigation = new Fullname
+                                    {
+                                        LastName = worksheet.Cells[row, 2].Text,
+                                        FirstName = worksheet.Cells[row, 3].Text,
+                                        MiddleName = worksheet.Cells[row, 4].Text
+                                    },
+                                    Phone = worksheet.Cells[row, 5].Text,
+                                    Email = worksheet.Cells[row, 6].Text,
+                                    Metro = worksheet.Cells[row, 7].Text,
+                                    HireDate = DateOnly.TryParse(worksheet.Cells[row, 8].Text, out var date) ? date : null,
+                                    Experience = worksheet.Cells[row, 9].Text,
+                                    Schedules = worksheet.Cells[row, 10].Text,
+                                    Notes = worksheet.Cells[row, 11].Text,
+                                    Comments = worksheet.Cells[row, 12].Text
+                                };
+
+                                employees.Add(employee);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Ошибка в строке {row}: {ex.Message}", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+
+                        if (employees.Any())
+                        {
+                            _context.Employees.AddRange(employees);
+                            _context.SaveChanges();
+                            LoadEmployees();
+                            MessageBox.Show($"Успешно импортировано {employees.Count} сотрудников", "Импорт завершен",MessageBoxButton.OK,MessageBoxImage.Information);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при импорте: {ex.Message}", "Ошибка",MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ObjectImport_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    Title = "Выберите файл для импорта объектов"
+                };
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    using (var package = new ExcelPackage(new FileInfo(openFileDialog.FileName)))
+                    {
+                        var worksheet = package.Workbook.Worksheets[0];
+                        var objects = new List<ObjectViewModel>();
+
+                        for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+                        {
+                            try
+                            {
+                                var obj = new ObjectViewModel
+                                {
+                                    ObjectName = worksheet.Cells[row, 2].Text,
+                                    PostalCode = worksheet.Cells[row, 3].Text,
+                                    Country = worksheet.Cells[row, 4].Text,
+                                    City = worksheet.Cells[row, 5].Text,
+                                    Street = worksheet.Cells[row, 6].Text,
+                                    Building = worksheet.Cells[row, 7].Text,
+                                    Corpus = worksheet.Cells[row, 8].Text,
+                                    Office = worksheet.Cells[row, 9].Text
+                                };
+
+                                objects.Add(obj);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Ошибка в строке {row}: {ex.Message}", "Предупреждение",MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+
+                        if (objects.Any())
+                        {
+                            foreach (var obj in objects)
+                            {
+                                var address = new Address
+                                {
+                                    PostalCode = obj.PostalCode,
+                                    Country = obj.Country,
+                                    City = obj.City,
+                                    Street = obj.Street,
+                                    Building = obj.Building,
+                                    Corpus = obj.Corpus,
+                                    Office = obj.Office
+                                };
+
+                                var newObject = new Models.Object
+                                {
+                                    ObjectName = obj.ObjectName,
+                                    IdAddressNavigation = address
+                                };
+
+                                _context.Objects.Add(newObject);
+                            }
+
+                            _context.SaveChanges();
+                            LoadObjects(); 
+                            MessageBox.Show($"Успешно импортировано {objects.Count} объектов","Импорт завершен",MessageBoxButton.OK,MessageBoxImage.Information);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при импорте объектов: {ex.Message}", "Ошибка",MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -905,13 +1039,11 @@ namespace DiplomProject
                 LoadEmployees();
                 LoadEmployeesPanel(); 
 
-                MessageBox.Show("Данные успешно обновлены!", "Успех",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Данные успешно обновлены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при обновлении: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка при обновлении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
      
