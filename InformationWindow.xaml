@@ -1,0 +1,129 @@
+﻿<Window x:Class="DiplomProject.InformationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DiplomProject"
+        mc:Ignorable="d"
+        Title="График работы сотрудника"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock" x:Key="LabelStyle">
+            <Setter Property="Margin" Value="0,5,0,2"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style TargetType="ComboBox" x:Key="ComboBoxStyle">
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+
+        <Style TargetType="DatePicker" x:Key="DatePickerStyle">
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="ButtonStyle">
+            <Setter Property="Margin" Value="0,10,0,5"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Background" Value="#FF6A5ACD"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#FF483D8B" Padding="10" CornerRadius="5">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel>
+                    <TextBlock x:Name="FullNameTextBlock" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock x:Name="ServiceTextBlock" FontSize="14" Foreground="White" Margin="0,5,0,0"/>
+                </StackPanel>
+                <StackPanel Margin="20,0,0,0">
+                    <TextBlock x:Name="PhoneTextBlock" FontSize="14" Foreground="White"/>
+                    <TextBlock x:Name="EmailTextBlock" FontSize="14" Foreground="White" Margin="0,5,0,0"/>
+                    <TextBlock x:Name="SummaryTextBlock" FontSize="14" Foreground="White" Margin="0,5,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="350"/>
+            </Grid.ColumnDefinitions>
+
+            <DataGrid x:Name="WorkHoursDataGrid" Grid.Column="0" Margin="0,0,10,0" 
+                     AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Объект" Binding="{Binding ObjectName}" Width="150"/>
+                    <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" Width="200"/>
+                    <DataGridTextColumn Header="Услуга" Binding="{Binding ServiceName}" Width="120"/>
+                    <DataGridTextColumn Header="Дата работы" Binding="{Binding WorkDate, StringFormat=d}" Width="100"/>
+                    <DataGridTextColumn Header="Начало" Binding="{Binding StartTime, StringFormat=t}" Width="80"/>
+                    <DataGridTextColumn Header="Окончание" Binding="{Binding EndTime, StringFormat=t}" Width="80"/>
+                    <DataGridTextColumn Header="Часы" Binding="{Binding HoursWorked}" Width="60"/>
+                    <DataGridTextColumn Header="Заметки" Binding="{Binding Notes}" Width="*"/>
+                    <DataGridTextColumn Header="Дата записи" Binding="{Binding RecordCreated, StringFormat=g}" Width="150"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Border Grid.Column="1" Background="#FFF0F0F0" Padding="10" CornerRadius="5">
+                <StackPanel>
+                    <TextBlock Text="Добавить новую запись" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Объект:" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox x:Name="ObjectComboBox" DisplayMemberPath="ObjectName" 
+                             Style="{StaticResource ComboBoxStyle}"
+                             SelectionChanged="ObjectComboBox_SelectionChanged"/>
+
+                    <TextBlock Text="Адрес:" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox x:Name="AddressComboBox" DisplayMemberPath="FullAddress" 
+                             Style="{StaticResource ComboBoxStyle}"/>
+
+                    <TextBlock Text="Услуга:" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox x:Name="ServiceComboBox" DisplayMemberPath="ServiceName" 
+         Style="{StaticResource ComboBoxStyle}"/>
+
+                    <TextBlock Text="Дата работы:" Style="{StaticResource LabelStyle}"/>
+                    <DatePicker x:Name="WorkDatePicker" Style="{StaticResource DatePickerStyle}"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                            <TextBlock Text="Время начала:" Style="{StaticResource LabelStyle}"/>
+                            <TextBox x:Name="StartTimeTextBox" Text="09:00"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                            <TextBlock Text="Время окончания:" Style="{StaticResource LabelStyle}"/>
+                            <TextBox x:Name="EndTimeTextBox" Text="18:00"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Заметки:" Style="{StaticResource LabelStyle}"/>
+                    <TextBox x:Name="NotesTextBox" AcceptsReturn="True" Height="60" Margin="0,0,0,10"/>
+
+                    <Button x:Name="AddButton" Content="Добавить" Style="{StaticResource ButtonStyle}" Click="AddButton_Click"/>
+                    <Button x:Name="DeleteButton" Content="Удалить" Style="{StaticResource ButtonStyle}" Click="DeleteButton_Click"/>
+                    <Button x:Name="ExportButton" Content="Экспорт" Style="{StaticResource ButtonStyle}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusTextBlock"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

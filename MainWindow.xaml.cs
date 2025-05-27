@@ -143,14 +143,14 @@ namespace DiplomProject
 
                 employeeInfoPanel.Children.Add(new TextBlock
                 {
-                    Text = $"ФИО: {fullName}",
+                    Text = $"{fullName}",
                     FontWeight = FontWeights.Bold,
                     Margin = new Thickness(0, 0, 0, 5)
                 });
 
                 employeeInfoPanel.Children.Add(new TextBlock
                 {
-                    Text = $"Email: {employee.Email}",
+                    Text = $"Почта: {employee.Email}",
                     Margin = new Thickness(0, 0, 0, 5)
                 });
 
@@ -159,10 +159,27 @@ namespace DiplomProject
                     Text = $"Телефон: {employee.Phone}"
                 });
 
-                employeeBorder.Child = employeeInfoPanel;
+                employeeInfoPanel.Children.Add(new TextBlock
+                {
+                    Text = $"Метро: {employee.Metro}"
+                });
 
+                employeeInfoPanel.Children.Add(new TextBlock
+                {
+                    Text = $"График: {employee.Schedules}"
+                });
+
+                employeeBorder.Child = employeeInfoPanel;
+                employeeBorder.MouseLeftButtonUp += (s, e) => OpenInformation(employee.IdEmployee);
                 EmployeesStackPanel.Children.Add(employeeBorder);
             }
+        }
+
+        private void OpenInformation(int employeeId)
+        {
+            InformationWindow detailsWindow = new InformationWindow(employeeId);
+            detailsWindow.Owner = this;
+            detailsWindow.ShowDialog();
         }
 
         private void LoadEmployees()
@@ -562,8 +579,7 @@ namespace DiplomProject
                         var objectName = _context.Objects.Find(rate.IdObject)?.ObjectName ?? "Объект";
                         var serviceName = _context.Services.Find(rate.IdService)?.ServiceName ?? "Должность";
 
-                        MessageBox.Show($"Ставка для {objectName} и {serviceName} уже существует",
-                                      "Дублирование данных");
+                        MessageBox.Show($"Ставка для {objectName} и {serviceName} уже существует", "Дублирование данных");
                         return;
                     }
 
