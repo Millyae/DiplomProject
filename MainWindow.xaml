@@ -1,0 +1,322 @@
+﻿<Window x:Class="DiplomProject.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DiplomProject"
+        mc:Ignorable="d"
+        Title="Учёт Сотрудников" 
+        WindowStyle="None"
+        WindowState="Maximized"
+        AllowsTransparency="True"
+        Background="Transparent">
+    <Window.Resources>
+        <Style TargetType="TabItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border Name="Border" BorderThickness="1,1,1,0" BorderBrush="#FF6A5ACD" CornerRadius="4,4,0,0" Margin="2,0">
+                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                            ContentSource="Header" Margin="12,4"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#FF6A5ACD"/>
+                                <Setter TargetName="ContentSite" Property="TextElement.Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter TargetName="Border" Property="Background" Value="#FF483D8B"/>
+                                <Setter TargetName="ContentSite" Property="TextElement.Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#FF6A5ACD"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF9370DB"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderBrush" Value="#FF6A5ACD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="AlternatingRowBackground" Value="#FFF0F0F0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="LightGray"/>
+            <Setter Property="VerticalGridLinesBrush" Value="LightGray"/>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                         Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" Margin="5"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#FF6A5ACD"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="BorderBrush" Value="#FF483D8B"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+
+    </Window.Resources>
+    <Grid>
+        <Border Background="White" CornerRadius="10" Margin="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Background="#FF483D8B" CornerRadius="10,10,0,0" Height="40">
+                    <Grid>
+                        <TextBlock Text="Employee Management System" Foreground="White" FontSize="16"
+                                  VerticalAlignment="Center" Margin="20,0" FontWeight="SemiBold"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="_" Width="40" Background="Transparent" Foreground="White"/>
+                            <Button Content="✕" Width="40" Background="Transparent" Foreground="White" Cursor=""/>
+                            <!--/Button> Click="ExitButton_Click"/>-->
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+                    <TabItem Header="Главное">
+                        <Grid Background="White">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
+                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                    <MenuItem Header=" Обновить" Background="#FF483D8B" BorderBrush="#FF6A5ACD"/>
+                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD"/>
+                                    <MenuItem Header="Выйти" Background="#FF483D8B" BorderBrush="#FF6A5ACD"/> <!--="ExitButton_Click"/>-->
+                                </MenuItem>
+                            </Menu>
+                            <DockPanel LastChildFill="True" Grid.Row="1">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="EmployeesStackPanel" Orientation="Vertical">
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </DockPanel>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">
+                                <TextBox x:Name="SearchEmployeeTextBox" Width="300" Height="25" Margin="584,0,10,0" VerticalAlignment="Center" TextChanged="SearchTextBox_TextChanged" Background="White" Foreground="Black"/>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Сотрудники">
+                        <Grid Background="White">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
+                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                    <MenuItem Header="Добавить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddButton_Click"/>
+                                    <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="SaveButton_Click"/>
+                                    <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteButton_Click"/>
+                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="Export_Click"/>
+                                </MenuItem>
+                            </Menu>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">
+                                <TextBox x:Name="SearchTextBox" Width="300" Height="25" Margin="584,0,10,0" VerticalAlignment="Center" TextChanged="SearchTextBox_TextChanged" Background="White" Foreground="Black"/>
+                            </StackPanel>
+                            <DataGrid x:Name="EmployeeDataGrid" Margin="67,66,82,66" Grid.Row="1" Background="White" Foreground="Black"/>
+                            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Button x:Name="DeleteButton" Content="Удаление" Width="120" Height="40" Margin="10" Click="DeleteButton_Click"/>
+                                <Button x:Name="SaveButton" Content="Сохранение" Width="120" Height="40" Margin="10" Click="SaveButton_Click"/>
+                                <Button x:Name="AddButton" Content="Добавление" Width="120" Height="40" Margin="10" Click="AddButton_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Объекты">
+                        <Grid Background="White">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
+                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                    <MenuItem Header="Добавить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddObjectButton_Click"/>
+                                    <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddObjectButton_Click"/>
+                                    <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteObjectButton_Click"/>
+                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ObjectExport_Click"/>
+                                </MenuItem>
+                            </Menu>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">
+                                <TextBox x:Name="SearchObjectTextBox" Width="300" Height="25" Margin="584,0,10,0"  VerticalAlignment="Top" Background="White" Foreground="Black" TextChanged="SearchObjectTextBox_TextChanged"/>
+                            </StackPanel>
+                            <DataGrid x:Name="ObjectDataGrid" Margin="67,66,82,66" Grid.Row="1" Background="White" Foreground="Black"/>
+                            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Button x:Name="DeleteObjectButton" Content="Удаление" Width="120" Height="40" Margin="10" Click="DeleteObjectButton_Click"/>
+                                <Button x:Name="SaveObjectButton" Content="Сохранение" Width="120" Height="40" Margin="10" Click="SaveObjectButton_Click"/>
+                                <Button x:Name="AddObjectButton" Content="Добавление" Width="120" Height="40" Margin="10" Click="AddObjectButton_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+                    <!--<TabItem Header="Ставки">
+                        <Grid Background="White">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
+                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                    <MenuItem Header="Добавить Должность" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddServiceButton_Click"/>
+                                    <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddRateButton_Click"/>
+                                    <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteRateButton_Click"/>
+                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="RateExport_Click" />
+                                </MenuItem>
+                            </Menu>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">
+                                <TextBox x:Name="SearchRateTextBox" Width="250" Height="25" Margin="584,0,10,0" VerticalAlignment="Center" TextChanged="SearchRateTextBox_TextChanged" Background="White" Foreground="Black"/>
+                                <ComboBox x:Name="ObjectComboBox" Width="250" Height="25" Margin="0,0,10,0" DisplayMemberPath="ObjectName"
+                      SelectedValuePath="IdObject" SelectionChanged="ObjectComboBox_SelectionChanged"/>
+                                <ComboBox x:Name="AddressComboBox" Width="250" Height="25" Margin="0,0,10,0" DisplayMemberPath="Address"
+                      SelectedValuePath="IdAddress" IsEnabled="False"/>
+                                <ComboBox x:Name="PositionComboBox" Width="250" Height="25" Margin="0,0,10,0" SelectionChanged="PositionComboBox_SelectionChanged"/>
+                            </StackPanel>
+
+                            <DataGrid x:Name="RateDataGrid" Grid.Row="1" Margin="10" Background="White" Foreground="Black" SelectionChanged="RateDataGrid_SelectionChanged" 
+                  AutoGenerateColumns="False" BeginningEdit="RateDataGrid_BeginningEdit">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Объект" Binding="{Binding ObjectName}" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Должность" Binding="{Binding ServiceName}" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Ставка" Binding="{Binding HourlyRate, StringFormat={}{0:N2}}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal" Margin="10">
+                                <Button x:Name="DeleteRateButton" Content="Удаление" Width="120" Height="40" Margin="10" Click="DeleteRateButton_Click"/>
+                                <Button x:Name="SaveRateButton" Content="Сохранение" Width="120" Height="40" Margin="10" Click="SaveRateButton_Click"/>
+                                <Button x:Name="AddRateButton" Content="Добавление" Width="120" Height="40" Margin="10" Click="AddRateButton_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>-->
+                    <TabItem Header="Ставки">
+                        <Grid Background="White">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
+                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                    <MenuItem Header="Добавить Должность" Background="#FF483D8B" BorderBrush="#FF6A5ACD" />
+                                    <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" />
+                                    <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" />
+                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="RateExport_Click" />
+                                </MenuItem>
+                            </Menu>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">
+                                <TextBox x:Name="SearchRateTextBox" Width="250" Height="25" Margin="584,0,10,0" VerticalAlignment="Center" 
+                     TextChanged="SearchRateTextBox_TextChanged" Background="White" Foreground="Black"/>
+                            </StackPanel>
+
+                            <DataGrid x:Name="RateDataGrid" Grid.Row="1" Margin="10" Background="White" Foreground="Black" AutoGenerateColumns="False" 
+                  CanUserAddRows="False" BeginningEdit="RateDataGrid_BeginningEdit">
+                                <DataGrid.Columns>
+                                    <!-- Колонка с ComboBox для выбора объекта -->
+                                    <DataGridTemplateColumn Header="Объект" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding ObjectName}" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <ComboBox x:Name="ObjectComboBoxInGrid" 
+                                      ItemsSource="{Binding DataContext.Objects, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                      DisplayMemberPath="ObjectName"
+                                      SelectedValuePath="IdObject"
+                                      SelectedValue="{Binding IdObject, UpdateSourceTrigger=PropertyChanged}"
+                                      SelectionChanged="ObjectComboBoxInGrid_SelectionChanged"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- Колонка с адресом (только для чтения) -->
+                                    <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" IsReadOnly="True" Width="*"/>
+
+                                    <!-- Колонка с ComboBox для выбора должности -->
+                                    <DataGridTemplateColumn Header="Должность" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding ServiceName}" VerticalAlignment="Center"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <ComboBox x:Name="PositionComboBoxInGrid" 
+                                      ItemsSource="{Binding DataContext.Services, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                      DisplayMemberPath="ServiceName"
+                                      SelectedValuePath="IdService"
+                                      SelectedValue="{Binding IdService, UpdateSourceTrigger=PropertyChanged}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- Колонка для ввода ставки -->
+                                    <DataGridTextColumn Header="Ставка" Binding="{Binding HourlyRate, StringFormat={}{0:N2}}" Width="Auto"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal" Margin="10">
+                                <Button x:Name="AddRateButton" Content="Добавить ставку" Width="120" Height="40" Margin="10" Click="AddRateButton_Click"/>
+                                <Button x:Name="DeleteRateButton" Content="Удалить" Width="120" Height="40" Margin="10" Click="DeleteRateButton_Click"/>
+                                <Button x:Name="SaveRateButton" Content="Сохранить все" Width="120" Height="40" Margin="10" Click="SaveRateButton_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
