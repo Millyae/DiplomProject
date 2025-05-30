@@ -19,6 +19,8 @@ using Microsoft.Win32;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Input;
 using DiplomProject.ViewModels;
+using DiplomProject.Validation;
+using System.Text;
 
 namespace DiplomProject
 {
@@ -175,6 +177,86 @@ namespace DiplomProject
             }
         }
 
+        private void SearchPanelTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var searchText = ((TextBox)sender).Text.ToLower();
+
+            // Очищаем текущие элементы
+            EmployeesStackPanel.Children.Clear();
+
+            // Получаем всех сотрудников из базы
+            var allEmployees = _context.Employees
+                .Include(e => e.IdFullnameNavigation)
+                .ToList();
+
+            // Фильтруем сотрудников по поисковому запросу
+            var filteredEmployees = allEmployees
+                .Where(emp =>
+                    (emp.IdFullnameNavigation.LastName?.ToLower().Contains(searchText) ?? false) ||
+                    (emp.IdFullnameNavigation.FirstName?.ToLower().Contains(searchText) ?? false) ||
+                    (emp.IdFullnameNavigation.MiddleName?.ToLower().Contains(searchText) ?? false) ||
+                    (emp.Email?.ToLower().Contains(searchText) ?? false) ||
+                    (emp.Phone?.ToLower().Contains(searchText) ?? false) ||
+                    (emp.Metro?.ToLower().Contains(searchText) ?? false) ||
+                    (emp.Schedules?.ToLower().Contains(searchText) ?? false))
+                .OrderBy(emp => emp.IdFullnameNavigation.LastName)
+                .ToList();
+
+            // Создаем элементы для отфильтрованных сотрудников
+            foreach (var employee in filteredEmployees)
+            {
+                string fullName = $"{employee.IdFullnameNavigation?.LastName} {employee.IdFullnameNavigation?.FirstName} {employee.IdFullnameNavigation?.MiddleName}";
+
+                Border employeeBorder = new Border
+                {
+                    BorderBrush = Brushes.LightGray,
+                    BorderThickness = new Thickness(1),
+                    Margin = new Thickness(5),
+                    Padding = new Thickness(10),
+                    CornerRadius = new CornerRadius(5),
+                    Background = Brushes.White,
+                    Cursor = Cursors.Hand
+                };
+
+                StackPanel employeeInfoPanel = new StackPanel
+                {
+                    Orientation = Orientation.Vertical
+                };
+
+                employeeInfoPanel.Children.Add(new TextBlock
+                {
+                    Text = $"{fullName}",
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 0, 0, 5)
+                });
+
+                employeeInfoPanel.Children.Add(new TextBlock
+                {
+                    Text = $"Почта: {employee.Email}",
+                    Margin = new Thickness(0, 0, 0, 5)
+                });
+
+                employeeInfoPanel.Children.Add(new TextBlock
+                {
+                    Text = $"Телефон: {employee.Phone}"
+                });
+
+                employeeInfoPanel.Children.Add(new TextBlock
+                {
+                    Text = $"Метро: {employee.Metro}"
+                });
+
+                employeeInfoPanel.Children.Add(new TextBlock
+                {
+                    Text = $"График: {employee.Schedules}"
+                });
+
+                employeeBorder.Child = employeeInfoPanel;
+                employeeBorder.MouseLeftButtonUp += (s, e) => OpenInformation(employee.IdEmployee);
+                EmployeesStackPanel.Children.Add(employeeBorder);
+            }
+        }
+
         private void OpenInformation(int employeeId)
         {
             InformationWindow detailsWindow = new InformationWindow(employeeId);
@@ -219,6 +301,43 @@ namespace DiplomProject
         {
             try
             {
+                bool hasErrors = false;
+                StringBuilder errorMessages = new StringBuilder();
+
+                foreach (var item in EmployeeDataGrid.Items)
+                {
+                    if (item is EmployeeViewModel employeeVM)
+                    {
+                        var hireDateValidation = EmployeeValidation.ValidateHireDate(employeeVM.HireDate);
+                        if (!hireDateValidation.IsValid)
+                        {
+                            hasErrors = true;
+                            errorMessages.AppendLine($"Сотрудник {employeeVM.LastName}: {hireDateValidation.ErrorMessage}");
+                        }
+
+                        var emailValidation = EmployeeValidation.ValidateEmail(employeeVM.Email, _context, employeeVM.IdEmployee);
+                        if (!emailValidation.IsValid)
+                        {
+                            hasErrors = true;
+                            errorMessages.AppendLine($"Сотрудник {employeeVM.LastName}: {emailValidation.ErrorMessage}");
+                        }
+
+                        var phoneValidation = EmployeeValidation.ValidatePhone(employeeVM.Phone, _context, employeeVM.IdEmployee);
+                        if (!phoneValidation.IsValid)
+                        {
+                            hasErrors = true;
+                            errorMessages.AppendLine($"Сотрудник {employeeVM.LastName}: {phoneValidation.ErrorMessage}");
+                        }
+                    }
+                }
+
+                if (hasErrors)
+                {
+                    MessageBox.Show($"Обнаружены ошибки:\n{errorMessages}", "Ошибки валидации", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Если ошибок нет, сохраняем изменения
                 foreach (var item in EmployeeDataGrid.Items)
                 {
                     if (item is EmployeeViewModel employeeVM)
@@ -262,20 +381,29 @@ namespace DiplomProject
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            if (EmployeeDataGrid.SelectedItem is EmployeeViewModel selectedEmployee)
+            if (EmployeeDataGrid.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите сотрудника для удаления", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var selectedEmployee = (EmployeeViewModel)EmployeeDataGrid.SelectedItem;
+            var result = MessageBox.Show("Вы уверены, что хотите удалить этого сотрудника?", "Подтверждение", MessageBoxButton.YesNo);
+
+            if (result == MessageBoxResult.Yes)
             {
                 try
                 {
                     var employee = _context.Employees
-                        .Include(e => e.IdFullnameNavigation)
-                        .FirstOrDefault(e => e.IdEmployee == selectedEmployee.IdEmployee);
+                        .Include(emp => emp.IdFullnameNavigation)
+                        .FirstOrDefault(emp => emp.IdEmployee == selectedEmployee.IdEmployee);
 
                     if (employee != null)
                     {
                         employee.IdFullnameNavigation = null;
-                        _context.Entry(employee).State = EntityState.Deleted;
-
+                        _context.Employees.Remove(employee);
                         _context.SaveChanges();
+
                         LoadEmployees();
                         MessageBox.Show("Сотрудник удален", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
@@ -285,11 +413,8 @@ namespace DiplomProject
                     MessageBox.Show($"Ошибка при удалении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-            else
-            {
-                MessageBox.Show("Выберите сотрудника для удаления", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
         }
+
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
@@ -624,8 +749,7 @@ namespace DiplomProject
         {
             if (_selectedRate == null) return;
 
-            var result = MessageBox.Show("Вы уверены, что хотите удалить эту ставку?",
-                "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("Вы уверены, что хотите удалить эту ставку?","Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
@@ -865,6 +989,61 @@ namespace DiplomProject
             }
         }
 
+        /*private void Import_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    Title = "Выберите файл для импорта"
+                };
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    using (var package = new ExcelPackage(new FileInfo(openFileDialog.FileName)))
+                    {
+                        var worksheet = package.Workbook.Worksheets[0];
+                        var employees = new List<Employee>();
+
+                        for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+                        {
+                            try
+                            {
+                                var employee = new Employee
+                                {
+                                    IdFullnameNavigation = new Fullname
+                                    {
+                                        LastName = worksheet.Cells[row, 2].Text,
+                                        FirstName = worksheet.Cells[row, 3].Text,
+                                        MiddleName = worksheet.Cells[row, 4].Text
+                                    },
+                                    Phone = worksheet.Cells[row, 5].Text,
+                                    Email = worksheet.Cells[row, 6].Text,
+                                    Metro = worksheet.Cells[row, 7].Text,
+                                    HireDate = DateOnly.TryParse(worksheet.Cells[row, 8].Text, out var date) ? date : null,
+                                    Experience = worksheet.Cells[row, 9].Text,
+                                    Schedules = worksheet.Cells[row, 10].Text,
+                                    Notes = worksheet.Cells[row, 11].Text,
+                                    Comments = worksheet.Cells[row, 12].Text
+                                };
+
+                                employees.Add(employee);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Ошибка в строке {row}: {ex.Message}", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+        }*/
+
         private void Import_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -879,7 +1058,7 @@ namespace DiplomProject
                 {
                     using (var package = new ExcelPackage(new FileInfo(openFileDialog.FileName)))
                     {
-                        var worksheet = package.Workbook.Worksheets[0]; 
+                        var worksheet = package.Workbook.Worksheets[0];
                         var employees = new List<Employee>();
 
                         for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
@@ -912,21 +1091,24 @@ namespace DiplomProject
                             }
                         }
 
-                        if (employees.Any())
-                        {
-                            _context.Employees.AddRange(employees);
-                            _context.SaveChanges();
-                            LoadEmployees();
-                            MessageBox.Show($"Успешно импортировано {employees.Count} сотрудников", "Импорт завершен",MessageBoxButton.OK,MessageBoxImage.Information);
-                        }
+                        // Очистка таблицы сотрудников
+                        _context.Employees.RemoveRange(_context.Employees);
+                        _context.SaveChanges();
+
+                        // Добавление новых записей
+                        _context.Employees.AddRange(employees);
+                        _context.SaveChanges();
+
+                        MessageBox.Show("Данные успешно импортированы", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при импорте: {ex.Message}", "Ошибка",MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка при импорте данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void ObjectImport_Click(object sender, RoutedEventArgs e)
         {

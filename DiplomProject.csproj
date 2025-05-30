@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="7.0.0" />
+    <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.1" />
   </ItemGroup>
 

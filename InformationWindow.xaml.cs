@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using DiplomProject.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
+using OfficeOpenXml;
 
 namespace DiplomProject
 {
@@ -37,8 +40,9 @@ namespace DiplomProject
 
             decimal totalHours = schedules.Sum(ws => ws.DailyHours ?? 0m);
             int totalDays = schedules.Select(ws => ws.WorkDate).Distinct().Count();
+
             decimal salary = schedules.Sum(ws =>
-        (ws.DailyHours ?? 0m) * (ws.IdRateNavigation?.HourlyRate ?? 0m));
+            (ws.DailyHours ?? 0m) * (ws.IdRateNavigation?.HourlyRate ?? 0m));
 
             SummaryTextBlock.Text = $"Всего дней: {totalDays} | Всего часов: {totalHours} | Зарплата: {salary:C}";
         }
@@ -119,6 +123,7 @@ namespace DiplomProject
             }).ToList();
 
             WorkHoursDataGrid.ItemsSource = displayData;
+            UpdateSummaryInfo();
         }
 
         private static string GetFullAddress(Address address)
@@ -185,14 +190,12 @@ namespace DiplomProject
                 var selectedObject = (Models.Object)ObjectComboBox.SelectedItem;
                 var selectedService = (Service)ServiceComboBox.SelectedItem;
 
-                var rate = _context.Rates
-                    .FirstOrDefault(r => r.IdObject == selectedObject.IdObject &&
-                                       r.IdService == selectedService.IdService);
+                var rate = _context.Rates.FirstOrDefault(r => r.IdObject == selectedObject.IdObject &&
+                r.IdService == selectedService.IdService);
 
                 if (rate == null)
                 {
-                    MessageBox.Show("Не найдена ставка для выбранной комбинации объекта и должности",
-                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Не найдена ставка для выбранной комбинации объекта и должности", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -303,8 +306,7 @@ namespace DiplomProject
         {
             if (_selectedSchedule == null) return;
 
-            var result = MessageBox.Show("Вы уверены, что хотите удалить эту запись?",
-                "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("Вы уверены, что хотите удалить эту запись?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
@@ -325,8 +327,7 @@ namespace DiplomProject
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка при удалении записи: {ex.Message}",
-                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Ошибка при удалении записи: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -350,6 +351,88 @@ namespace DiplomProject
         {
             base.OnClosed(e);
             _context?.Dispose();
+        }
+
+        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var schedules = WorkHoursDataGrid.ItemsSource.Cast<WorkScheduleDisplay>().ToList();
+                if (schedules == null || !schedules.Any())
+                {
+                    MessageBox.Show("Нет данных графика работы для экспорта", "Экспорт",
+                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    FileName = $"ГрафикРаботы_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                    DefaultExt = ".xlsx",
+                    Title = "Выберите место для сохранения файла"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    using (var package = new ExcelPackage())
+                    {
+                        var worksheet = package.Workbook.Worksheets.Add("График работы");
+
+                        // Заголовки столбцов
+                        string[] headers = {
+                    "№", "Объект", "Адрес", "Должность",
+                    "Дата работы", "Начало", "Окончание",
+                    "Часы", "Примечания", "Дата создания записи"
+                };
+
+                        // Записываем заголовки
+                        for (int i = 0; i < headers.Length; i++)
+                        {
+                            worksheet.Cells[1, i + 1].Value = headers[i];
+                            worksheet.Cells[1, i + 1].Style.Font.Bold = true;
+                        }
+
+                        // Заполняем данные
+                        int row = 2;
+                        foreach (var schedule in schedules)
+                        {
+                            worksheet.Cells[row, 1].Value = schedule.ScheduleId;
+                            worksheet.Cells[row, 2].Value = schedule.ObjectName;
+                            worksheet.Cells[row, 3].Value = schedule.Address;
+                            worksheet.Cells[row, 4].Value = schedule.ServiceName;
+                            worksheet.Cells[row, 5].Value = schedule.WorkDate?.ToShortDateString();
+                            worksheet.Cells[row, 6].Value = schedule.StartTime?.ToString(@"hh\:mm");
+                            worksheet.Cells[row, 7].Value = schedule.EndTime?.ToString(@"hh\:mm");
+                            worksheet.Cells[row, 8].Value = schedule.HoursWorked;
+                            worksheet.Cells[row, 9].Value = schedule.Notes;
+                            worksheet.Cells[row, 10].Value = schedule.RecordCreated.ToString("g");
+                            row++;
+                        }
+
+                        // Автоподбор ширины столбцов
+                        worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                        // Сохраняем файл
+                        FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
+                        package.SaveAs(excelFile);
+
+                        MessageBox.Show($"График работы успешно экспортирован в файл:\n{saveFileDialog.FileName}",
+                                      "Экспорт завершен",
+                                      MessageBoxButton.OK,
+                                      MessageBoxImage.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при экспорте графика работы: {ex.Message}",
+                               "Ошибка",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Error);
+            }
         }
     }
 }

@@ -116,7 +116,7 @@
 
                     <Button x:Name="AddButton" Content="Добавить" Style="{StaticResource ButtonStyle}" Click="AddButton_Click"/>
                     <Button x:Name="DeleteButton" Content="Удалить" Style="{StaticResource ButtonStyle}" Click="DeleteButton_Click"/>
-                    <Button x:Name="ExportButton" Content="Экспорт" Style="{StaticResource ButtonStyle}"/>
+                    <Button x:Name="ExportButton" Content="Экспорт" Style="{StaticResource ButtonStyle}" Click="ExportButton_Click"/>
                 </StackPanel>
             </Border>
         </Grid>
