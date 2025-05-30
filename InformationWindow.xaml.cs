@@ -66,7 +66,7 @@ namespace DiplomProject
             }
         }
 
-        private void LoadEmployeeData()
+        public void LoadEmployeeData()
         {
             _currentEmployee = _context.Employees
                 .Include(e => e.IdFullnameNavigation)
