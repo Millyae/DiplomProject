@@ -98,6 +98,7 @@ namespace DiplomProject
             var schedules = _context.WorkSchedules
                 .Include(ws => ws.IdRateNavigation)
                 .ThenInclude(r => r.IdObjectNavigation)
+                .ThenInclude(o => o.IdAddressNavigation)
                 .Include(ws => ws.IdRateNavigation)
                 .ThenInclude(ws => ws.IdServiceNavigation)
                 .Where(ws => ws.IdEmployee == _employeeId)
@@ -181,7 +182,7 @@ namespace DiplomProject
             }
         }
 
-        private void AddButton_Click(object sender, RoutedEventArgs e)
+        /*private void AddButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -253,6 +254,106 @@ namespace DiplomProject
             {
                 MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }*/
+
+        private void AddButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!ValidateInputs()) return;
+
+                var selectedObject = (Models.Object)ObjectComboBox.SelectedItem;
+                var selectedService = (Service)ServiceComboBox.SelectedItem;
+
+                var rate = _context.Rates.FirstOrDefault(r => r.IdObject == selectedObject.IdObject &&
+                r.IdService == selectedService.IdService);
+
+                if (rate == null)
+                {
+                    MessageBox.Show("Не найдена ставка для выбранной комбинации объекта и должности", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                DateOnly workDate = DateOnly.FromDateTime(WorkDatePicker.SelectedDate.Value);
+                TimeOnly startTime = TimeOnly.Parse(StartTimeTextBox.Text);
+                TimeOnly endTime = TimeOnly.Parse(EndTimeTextBox.Text);
+
+                // Проверка на пересечение времени
+                if (HasTimeConflict(_employeeId, workDate, startTime, endTime, _selectedSchedule?.ScheduleId))
+                {
+                    MessageBox.Show("Сотрудник уже записан на это время в выбранную дату. Выберите другое время.", "Конфликт времени", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                decimal hoursWorked = (decimal)(endTime - startTime).TotalHours;
+
+                if (_selectedSchedule == null)
+                {
+                    var newSchedule = new WorkSchedule
+                    {
+                        IdEmployee = _employeeId,
+                        IdRate = rate.IdRate,
+                        WorkDate = workDate,
+                        StartTime = startTime,
+                        EndTime = endTime,
+                        DailyHours = hoursWorked,
+                        Notes = NotesTextBox.Text,
+                        RecordCreated = DateTime.Now,
+                    };
+
+                    _context.WorkSchedules.Add(newSchedule);
+                    _context.SaveChanges();
+                    StatusTextBlock.Text = "Запись успешно добавлена";
+                }
+                else
+                {
+                    var scheduleToUpdate = _context.WorkSchedules
+                        .FirstOrDefault(ws => ws.IdSchedule == _selectedSchedule.ScheduleId);
+
+                    if (scheduleToUpdate != null)
+                    {
+                        scheduleToUpdate.IdRate = rate.IdRate;
+                        scheduleToUpdate.DailyHours = hoursWorked;
+                        scheduleToUpdate.Notes = NotesTextBox.Text;
+                        scheduleToUpdate.WorkDate = workDate;
+                        scheduleToUpdate.StartTime = startTime;
+                        scheduleToUpdate.EndTime = endTime;
+
+                        _context.SaveChanges();
+                        StatusTextBlock.Text = "Запись успешно обновлена";
+                    }
+                }
+
+                LoadWorkScheduleData();
+                ClearInputFields();
+                ResetEditMode();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool HasTimeConflict(int employeeId, DateOnly workDate, TimeOnly newStartTime, TimeOnly newEndTime, int? excludedScheduleId = null)
+        {
+            var existingSchedules = _context.WorkSchedules
+                .Where(ws => ws.IdEmployee == employeeId &&
+                            ws.WorkDate == workDate &&
+                            (excludedScheduleId == null || ws.IdSchedule != excludedScheduleId))
+                .ToList();
+
+            foreach (var schedule in existingSchedules)
+            {
+                TimeOnly existingStart = schedule.StartTime ?? TimeOnly.MinValue;
+                TimeOnly existingEnd = schedule.EndTime ?? TimeOnly.MaxValue;
+
+                if (newStartTime < existingEnd && newEndTime > existingStart)
+                {
+                    return true; 
+                }
+            }
+
+            return false; 
         }
 
         private bool ValidateInputs()
@@ -360,8 +461,7 @@ namespace DiplomProject
                 var schedules = WorkHoursDataGrid.ItemsSource.Cast<WorkScheduleDisplay>().ToList();
                 if (schedules == null || !schedules.Any())
                 {
-                    MessageBox.Show("Нет данных графика работы для экспорта", "Экспорт",
-                                  MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Нет данных графика работы для экспорта", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -381,21 +481,18 @@ namespace DiplomProject
                     {
                         var worksheet = package.Workbook.Worksheets.Add("График работы");
 
-                        // Заголовки столбцов
                         string[] headers = {
-                    "№", "Объект", "Адрес", "Должность",
-                    "Дата работы", "Начало", "Окончание",
-                    "Часы", "Примечания", "Дата создания записи"
-                };
+                            "№", "Объект", "Адрес", "Должность",
+                            "Дата работы", "Начало", "Окончание",
+                            "Часы", "Примечания", "Дата создания записи"
+                        };
 
-                        // Записываем заголовки
                         for (int i = 0; i < headers.Length; i++)
                         {
                             worksheet.Cells[1, i + 1].Value = headers[i];
                             worksheet.Cells[1, i + 1].Style.Font.Bold = true;
                         }
 
-                        // Заполняем данные
                         int row = 2;
                         foreach (var schedule in schedules)
                         {
@@ -412,26 +509,18 @@ namespace DiplomProject
                             row++;
                         }
 
-                        // Автоподбор ширины столбцов
                         worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
-                        // Сохраняем файл
                         FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
                         package.SaveAs(excelFile);
 
-                        MessageBox.Show($"График работы успешно экспортирован в файл:\n{saveFileDialog.FileName}",
-                                      "Экспорт завершен",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
+                        MessageBox.Show($"График работы успешно экспортирован в файл:\n{saveFileDialog.FileName}", "Экспорт завершен",MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при экспорте графика работы: {ex.Message}",
-                               "Ошибка",
-                               MessageBoxButton.OK,
-                               MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка при экспорте графика работы: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

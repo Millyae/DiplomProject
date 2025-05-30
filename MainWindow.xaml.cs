@@ -179,81 +179,30 @@ namespace DiplomProject
 
         private void SearchPanelTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var searchText = ((TextBox)sender).Text.ToLower();
+            string searchText = SearchPanelTextBox.Text.ToLower().Trim();
 
-            // Очищаем текущие элементы
-            EmployeesStackPanel.Children.Clear();
-
-            // Получаем всех сотрудников из базы
-            var allEmployees = _context.Employees
-                .Include(e => e.IdFullnameNavigation)
-                .ToList();
-
-            // Фильтруем сотрудников по поисковому запросу
-            var filteredEmployees = allEmployees
-                .Where(emp =>
-                    (emp.IdFullnameNavigation.LastName?.ToLower().Contains(searchText) ?? false) ||
-                    (emp.IdFullnameNavigation.FirstName?.ToLower().Contains(searchText) ?? false) ||
-                    (emp.IdFullnameNavigation.MiddleName?.ToLower().Contains(searchText) ?? false) ||
-                    (emp.Email?.ToLower().Contains(searchText) ?? false) ||
-                    (emp.Phone?.ToLower().Contains(searchText) ?? false) ||
-                    (emp.Metro?.ToLower().Contains(searchText) ?? false) ||
-                    (emp.Schedules?.ToLower().Contains(searchText) ?? false))
-                .OrderBy(emp => emp.IdFullnameNavigation.LastName)
-                .ToList();
-
-            // Создаем элементы для отфильтрованных сотрудников
-            foreach (var employee in filteredEmployees)
+            foreach (Border employeeBorder in EmployeesStackPanel.Children)
             {
-                string fullName = $"{employee.IdFullnameNavigation?.LastName} {employee.IdFullnameNavigation?.FirstName} {employee.IdFullnameNavigation?.MiddleName}";
+                bool isMatch = false;
 
-                Border employeeBorder = new Border
+                if (employeeBorder.Child is StackPanel employeePanel)
                 {
-                    BorderBrush = Brushes.LightGray,
-                    BorderThickness = new Thickness(1),
-                    Margin = new Thickness(5),
-                    Padding = new Thickness(10),
-                    CornerRadius = new CornerRadius(5),
-                    Background = Brushes.White,
-                    Cursor = Cursors.Hand
-                };
+                    foreach (var child in employeePanel.Children)
+                    {
+                        if (child is TextBlock textBlock)
+                        {
+                            if (textBlock.Text.ToLower().Contains(searchText))
+                            {
+                                isMatch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
 
-                StackPanel employeeInfoPanel = new StackPanel
-                {
-                    Orientation = Orientation.Vertical
-                };
-
-                employeeInfoPanel.Children.Add(new TextBlock
-                {
-                    Text = $"{fullName}",
-                    FontWeight = FontWeights.Bold,
-                    Margin = new Thickness(0, 0, 0, 5)
-                });
-
-                employeeInfoPanel.Children.Add(new TextBlock
-                {
-                    Text = $"Почта: {employee.Email}",
-                    Margin = new Thickness(0, 0, 0, 5)
-                });
-
-                employeeInfoPanel.Children.Add(new TextBlock
-                {
-                    Text = $"Телефон: {employee.Phone}"
-                });
-
-                employeeInfoPanel.Children.Add(new TextBlock
-                {
-                    Text = $"Метро: {employee.Metro}"
-                });
-
-                employeeInfoPanel.Children.Add(new TextBlock
-                {
-                    Text = $"График: {employee.Schedules}"
-                });
-
-                employeeBorder.Child = employeeInfoPanel;
-                employeeBorder.MouseLeftButtonUp += (s, e) => OpenInformation(employee.IdEmployee);
-                EmployeesStackPanel.Children.Add(employeeBorder);
+                employeeBorder.Visibility = isMatch || string.IsNullOrEmpty(searchText)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
             }
         }
 
@@ -337,7 +286,6 @@ namespace DiplomProject
                     return;
                 }
 
-                // Если ошибок нет, сохраняем изменения
                 foreach (var item in EmployeeDataGrid.Items)
                 {
                     if (item is EmployeeViewModel employeeVM)
@@ -910,20 +858,14 @@ namespace DiplomProject
                         FileInfo excelFile = new FileInfo(saveFileDialog.FileName);
                         package.SaveAs(excelFile);
 
-                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}",
-                                      "Экспорт завершен",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
+                        MessageBox.Show($"Данные успешно экспортированы в файл:\n{saveFileDialog.FileName}","Экспорт завершен",MessageBoxButton.OK,MessageBoxImage.Information);
                     }
 
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}",
-                              "Ошибка",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка при экспорте данных: {ex.Message}","Ошибка",MessageBoxButton.OK,MessageBoxImage.Error);
             }
         }
 
@@ -989,61 +931,6 @@ namespace DiplomProject
             }
         }
 
-        /*private void Import_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                OpenFileDialog openFileDialog = new OpenFileDialog
-                {
-                    Filter = "Excel files (*.xlsx)|*.xlsx",
-                    Title = "Выберите файл для импорта"
-                };
-
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    using (var package = new ExcelPackage(new FileInfo(openFileDialog.FileName)))
-                    {
-                        var worksheet = package.Workbook.Worksheets[0];
-                        var employees = new List<Employee>();
-
-                        for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
-                        {
-                            try
-                            {
-                                var employee = new Employee
-                                {
-                                    IdFullnameNavigation = new Fullname
-                                    {
-                                        LastName = worksheet.Cells[row, 2].Text,
-                                        FirstName = worksheet.Cells[row, 3].Text,
-                                        MiddleName = worksheet.Cells[row, 4].Text
-                                    },
-                                    Phone = worksheet.Cells[row, 5].Text,
-                                    Email = worksheet.Cells[row, 6].Text,
-                                    Metro = worksheet.Cells[row, 7].Text,
-                                    HireDate = DateOnly.TryParse(worksheet.Cells[row, 8].Text, out var date) ? date : null,
-                                    Experience = worksheet.Cells[row, 9].Text,
-                                    Schedules = worksheet.Cells[row, 10].Text,
-                                    Notes = worksheet.Cells[row, 11].Text,
-                                    Comments = worksheet.Cells[row, 12].Text
-                                };
-
-                                employees.Add(employee);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"Ошибка в строке {row}: {ex.Message}", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            }
-                        }
-                    }
-                }
-            }
-            catch
-            {
-
-            }
-        }*/
-
         private void Import_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1051,61 +938,104 @@ namespace DiplomProject
                 OpenFileDialog openFileDialog = new OpenFileDialog
                 {
                     Filter = "Excel files (*.xlsx)|*.xlsx",
-                    Title = "Выберите файл для импорта"
+                    Title = "Выберите файл для импорта сотрудников"
                 };
 
                 if (openFileDialog.ShowDialog() == true)
                 {
                     using (var package = new ExcelPackage(new FileInfo(openFileDialog.FileName)))
                     {
+                        if (package.Workbook.Worksheets.Count == 0)
+                        {
+                            MessageBox.Show("В файле нет рабочих листов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+
                         var worksheet = package.Workbook.Worksheets[0];
-                        var employees = new List<Employee>();
+
+                        if (worksheet.Dimension == null || worksheet.Dimension.End.Column < 12)
+                        {
+                            MessageBox.Show("Файл имеет неверный формат. Проверьте количество столбцов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+
+                        var employees = new List<EmployeeViewModel>();
+                        int successCount = 0;
+                        int errorCount = 0;
+                        StringBuilder errorMessages = new StringBuilder();
 
                         for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
                         {
                             try
                             {
-                                var employee = new Employee
+                                if (string.IsNullOrWhiteSpace(worksheet.Cells[row, 2].Text))
+                                    continue;
+
+                                var employee = new EmployeeViewModel
                                 {
-                                    IdFullnameNavigation = new Fullname
-                                    {
-                                        LastName = worksheet.Cells[row, 2].Text,
-                                        FirstName = worksheet.Cells[row, 3].Text,
-                                        MiddleName = worksheet.Cells[row, 4].Text
-                                    },
-                                    Phone = worksheet.Cells[row, 5].Text,
-                                    Email = worksheet.Cells[row, 6].Text,
-                                    Metro = worksheet.Cells[row, 7].Text,
+                                    LastName = worksheet.Cells[row, 2].Text?.Trim(),
+                                    FirstName = worksheet.Cells[row, 3].Text?.Trim(),
+                                    MiddleName = worksheet.Cells[row, 4].Text?.Trim(),
+                                    Phone = worksheet.Cells[row, 5].Text?.Trim(),
+                                    Email = worksheet.Cells[row, 6].Text?.Trim(),
+                                    Metro = worksheet.Cells[row, 7].Text?.Trim(),
                                     HireDate = DateOnly.TryParse(worksheet.Cells[row, 8].Text, out var date) ? date : null,
-                                    Experience = worksheet.Cells[row, 9].Text,
-                                    Schedules = worksheet.Cells[row, 10].Text,
-                                    Notes = worksheet.Cells[row, 11].Text,
-                                    Comments = worksheet.Cells[row, 12].Text
+                                    Experience = worksheet.Cells[row, 9].Text?.Trim(),
+                                    Schedules = worksheet.Cells[row, 10].Text?.Trim(),
+                                    Notes = worksheet.Cells[row, 11].Text?.Trim(),
+                                    Comments = worksheet.Cells[row, 12].Text?.Trim(),
                                 };
 
+                                if (string.IsNullOrEmpty(employee.LastName) || string.IsNullOrEmpty(employee.FirstName))
+                                {
+                                    throw new Exception("Фамилия и имя обязательны для заполнения");
+                                }
+
                                 employees.Add(employee);
+                                successCount++;
                             }
                             catch (Exception ex)
                             {
-                                MessageBox.Show($"Ошибка в строке {row}: {ex.Message}", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                errorCount++;
+                                errorMessages.AppendLine($"Строка {row}: {ex.Message}");
                             }
                         }
 
-                        // Очистка таблицы сотрудников
-                        _context.Employees.RemoveRange(_context.Employees);
-                        _context.SaveChanges();
-
-                        // Добавление новых записей
-                        _context.Employees.AddRange(employees);
-                        _context.SaveChanges();
-
-                        MessageBox.Show("Данные успешно импортированы", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        if (employees.Any())
+                        {
+                            string message = $"Успешно импортировано: {successCount} сотрудников";
+                            if (errorCount > 0)
+                            {
+                                message += $"\nОшибки: {errorCount}\n\nДетали ошибок:\n{errorMessages.ToString()}";
+                                MessageBox.Show(message, "Результат импорта", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            else
+                            {
+                                MessageBox.Show(message, "Импорт завершен", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Нет данных для импорта.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
                     }
                 }
             }
+            catch (FileNotFoundException)
+            {
+                MessageBox.Show("Файл не найден. Пожалуйста, выберите существующий файл.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show($"Ошибка ввода-вывода: {ex.Message}\nФайл может быть открыт в другой программе.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show($"Ошибка при работе с Excel: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при импорте данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Неожиданная ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1185,6 +1115,62 @@ namespace DiplomProject
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при импорте объектов: {ex.Message}", "Ошибка",MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ImportRates_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx",
+                    Title = "Выберите файл для импорта ставок"
+                };
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    using (var package = new ExcelPackage(new FileInfo(openFileDialog.FileName)))
+                    {
+                        var worksheet = package.Workbook.Worksheets[0];
+                        var rates = new List<Rate>();
+
+                        for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+                        {
+                            string objectName = worksheet.Cells[row, 1].Text;
+                            string serviceName = worksheet.Cells[row, 3].Text;
+                            decimal hourlyRate = decimal.Parse(worksheet.Cells[row, 4].Text);
+
+                            var dbObject = _context.Objects.FirstOrDefault(o => o.ObjectName == objectName);
+                            var dbService = _context.Services.FirstOrDefault(s => s.ServiceName == serviceName);
+
+                            if (dbObject == null || dbService == null)
+                            {
+                                MessageBox.Show($"Объект или услуга не найдены в строке {row}", "Ошибка",MessageBoxButton.OK, MessageBoxImage.Warning);
+                                continue;
+                            }
+
+                            var rate = new Rate
+                            {
+                                IdObject = dbObject.IdObject,
+                                IdService = dbService.IdService,
+                                HourlyRate = hourlyRate
+                            };
+
+                            rates.Add(rate);
+                        }
+
+                        _context.Rates.AddRange(rates);
+                        _context.SaveChanges();
+
+                        MessageBox.Show($"Импортировано {rates.Count} ставок", "Успех",MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при импорте: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1346,10 +1332,6 @@ namespace DiplomProject
             }
         }
 
-        private void ExportImpor_Click(object sender, TextChangedEventArgs e)
-        {
-
-        }
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1362,17 +1344,36 @@ namespace DiplomProject
 
             var filtered = _context.Rates
                 .Include(r => r.IdObjectNavigation)
+                    .ThenInclude(o => o.IdAddressNavigation)
                 .Include(r => r.IdServiceNavigation)
                 .Where(r =>
                     r.IdObjectNavigation.ObjectName.ToLower().Contains(searchText) ||
                     r.IdServiceNavigation.ServiceName.ToLower().Contains(searchText) ||
-                    r.HourlyRate.ToString().Contains(searchText))
-                .Select(r => new
+                    r.HourlyRate.ToString().Contains(searchText) ||
+                    (r.IdObjectNavigation.IdAddressNavigation.PostalCode != null &&
+                     r.IdObjectNavigation.IdAddressNavigation.PostalCode.ToLower().Contains(searchText)) ||
+                    (r.IdObjectNavigation.IdAddressNavigation.Country != null &&
+                     r.IdObjectNavigation.IdAddressNavigation.Country.ToLower().Contains(searchText)) ||
+                    (r.IdObjectNavigation.IdAddressNavigation.City != null &&
+                     r.IdObjectNavigation.IdAddressNavigation.City.ToLower().Contains(searchText)) ||
+                    (r.IdObjectNavigation.IdAddressNavigation.Street != null &&
+                     r.IdObjectNavigation.IdAddressNavigation.Street.ToLower().Contains(searchText)) ||
+                    (r.IdObjectNavigation.IdAddressNavigation.Building != null &&
+                     r.IdObjectNavigation.IdAddressNavigation.Building.ToLower().Contains(searchText)))
+                .Select(r => new RateViewModel
                 {
-                    r.IdRate,
+                    IdRate = r.IdRate,
+                    IdObject = r.IdObject,
+                    IdAddress = r.IdObjectNavigation.IdAddress,
+                    IdService = r.IdService,
                     ObjectName = r.IdObjectNavigation.ObjectName,
+                    Address = $"{r.IdObjectNavigation.IdAddressNavigation.PostalCode}, " +
+                             $"{r.IdObjectNavigation.IdAddressNavigation.Country}, " +
+                             $"{r.IdObjectNavigation.IdAddressNavigation.City}, " +
+                             $"{r.IdObjectNavigation.IdAddressNavigation.Street}, " +
+                             $"{r.IdObjectNavigation.IdAddressNavigation.Building}",
                     ServiceName = r.IdServiceNavigation.ServiceName,
-                    r.HourlyRate
+                    HourlyRate = r.HourlyRate
                 })
                 .ToList();
 

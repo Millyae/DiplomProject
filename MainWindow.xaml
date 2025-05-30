@@ -179,7 +179,8 @@
                                     <MenuItem Header="Добавить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddObjectButton_Click"/>
                                     <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddObjectButton_Click"/>
                                     <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteObjectButton_Click"/>
-                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ObjectExport_Click"/>
+                                    <MenuItem Header="Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ObjectExport_Click"/>
+                                    <MenuItem Header="Импорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ObjectImport_Click"/>
                                 </MenuItem>
                             </Menu>
                             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">
@@ -206,7 +207,8 @@
                                     <MenuItem Header="Добавить Должность" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddNewRate_Click"/>
                                     <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" />
                                     <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" />
-                                    <MenuItem Header="Импорт/Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="RateExport_Click" />
+                                    <MenuItem Header="Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="RateExport_Click" />
+                                    <MenuItem Header="Импорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ObjectImport_Click"/>
                                 </MenuItem>
                             </Menu>
 
@@ -227,11 +229,11 @@
                                         <DataGridTemplateColumn.CellEditingTemplate>
                                             <DataTemplate>
                                                 <ComboBox x:Name="ObjectComboBoxInGrid" 
-                                      ItemsSource="{Binding DataContext.Objects, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                      DisplayMemberPath="ObjectName"
-                                      SelectedValuePath="IdObject"
-                                      SelectedValue="{Binding IdObject, UpdateSourceTrigger=PropertyChanged}"
-                                      SelectionChanged="ObjectComboBoxInGrid_SelectionChanged"/>
+                                                  ItemsSource="{Binding DataContext.Objects, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                  DisplayMemberPath="ObjectName"
+                                                  SelectedValuePath="IdObject"
+                                                  SelectedValue="{Binding IdObject, UpdateSourceTrigger=PropertyChanged}"
+                                                  SelectionChanged="ObjectComboBoxInGrid_SelectionChanged"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellEditingTemplate>
                                     </DataGridTemplateColumn>
