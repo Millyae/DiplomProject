@@ -182,80 +182,6 @@ namespace DiplomProject
             }
         }
 
-        /*private void AddButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (!ValidateInputs()) return;
-
-                var selectedObject = (Models.Object)ObjectComboBox.SelectedItem;
-                var selectedService = (Service)ServiceComboBox.SelectedItem;
-
-                var rate = _context.Rates.FirstOrDefault(r => r.IdObject == selectedObject.IdObject &&
-                r.IdService == selectedService.IdService);
-
-                if (rate == null)
-                {
-                    MessageBox.Show("Не найдена ставка для выбранной комбинации объекта и должности", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-
-                DateOnly workDate = DateOnly.FromDateTime(WorkDatePicker.SelectedDate.Value);
-
-                TimeOnly startTime = TimeOnly.Parse(StartTimeTextBox.Text);
-                TimeOnly endTime = TimeOnly.Parse(EndTimeTextBox.Text);
-
-                decimal hoursWorked = (decimal)(endTime - startTime).TotalHours;
-
-                if (_selectedSchedule == null)
-                {
-                    var newSchedule = new WorkSchedule
-                    {
-                        IdEmployee = _employeeId,
-                        IdRate = rate.IdRate,
-                        WorkDate = workDate,
-                        StartTime = startTime,
-                        EndTime = endTime,
-                        DailyHours = hoursWorked,
-                        Notes = NotesTextBox.Text,
-                        RecordCreated = DateTime.Now,
-
-                    };
-
-                    _context.WorkSchedules.Add(newSchedule);
-                    _context.SaveChanges();
-                    StatusTextBlock.Text = "Запись успешно добавлена";
-                }
-                else
-                {
-                    var scheduleToUpdate = _context.WorkSchedules
-                        .FirstOrDefault(ws => ws.IdSchedule == _selectedSchedule.ScheduleId);
-
-                    if (scheduleToUpdate != null)
-                    {
-                        scheduleToUpdate.IdRate = rate.IdRate;
-                        scheduleToUpdate.DailyHours = hoursWorked;
-                        scheduleToUpdate.Notes = NotesTextBox.Text;
-                        scheduleToUpdate.WorkDate = workDate;
-                        scheduleToUpdate.StartTime = startTime;
-                        scheduleToUpdate.EndTime = endTime;
-
-                        _context.SaveChanges();
-                        StatusTextBlock.Text = "Запись успешно обновлена";
-                    }
-                }
-
-                LoadWorkScheduleData();
-                ClearInputFields();
-                ResetEditMode();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }*/
-
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -278,7 +204,6 @@ namespace DiplomProject
                 TimeOnly startTime = TimeOnly.Parse(StartTimeTextBox.Text);
                 TimeOnly endTime = TimeOnly.Parse(EndTimeTextBox.Text);
 
-                // Проверка на пересечение времени
                 if (HasTimeConflict(_employeeId, workDate, startTime, endTime, _selectedSchedule?.ScheduleId))
                 {
                     MessageBox.Show("Сотрудник уже записан на это время в выбранную дату. Выберите другое время.", "Конфликт времени", MessageBoxButton.OK, MessageBoxImage.Warning);
