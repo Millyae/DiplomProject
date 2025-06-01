@@ -1335,7 +1335,9 @@ namespace DiplomProject
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
-
+            LoginWindow loginWindow = new LoginWindow();
+            loginWindow.Show();
+            this.Close();
         }
 
         private void SearchRateTextBox_TextChanged(object sender, TextChangedEventArgs e)

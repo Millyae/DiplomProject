@@ -15,8 +15,6 @@ public partial class WorkSchedule
 
     public int IdRate { get; set; }
 
-    public int? IdService { get; set; }
-
     public DateOnly? WorkDate { get; set; }
 
     public TimeOnly? StartTime { get; set; }
@@ -35,7 +33,7 @@ public partial class WorkSchedule
 
     public virtual Employee IdEmployeeNavigation { get; set; }
 
-    public virtual Rate IdRateNavigation { get; set; }
+    public virtual Object IdObjectNavigation { get; set; }
 
-    public virtual Service IdServiceNavigation { get; set; }
+    public virtual Rate IdRateNavigation { get; set; }
 }

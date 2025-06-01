@@ -16,4 +16,6 @@ public partial class Object
     public virtual Address IdAddressNavigation { get; set; }
 
     public virtual ICollection<Rate> Rates { get; set; } = new List<Rate>();
+
+    public virtual ICollection<WorkSchedule> WorkSchedules { get; set; } = new List<WorkSchedule>();
 }

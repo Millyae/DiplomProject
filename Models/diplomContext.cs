@@ -92,7 +92,7 @@ public partial class diplomContext : DbContext
 
             entity.ToTable("employee");
 
-            entity.HasIndex(e => e.IdFullname, "employee_ibfk_1");
+            entity.HasIndex(e => e.IdFullname, "id_fullname");
 
             entity.Property(e => e.IdEmployee).HasColumnName("id_employee");
             entity.Property(e => e.Comments)
@@ -125,7 +125,6 @@ public partial class diplomContext : DbContext
 
             entity.HasOne(d => d.IdFullnameNavigation).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.IdFullname)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("employee_ibfk_1");
         });
 
@@ -155,7 +154,7 @@ public partial class diplomContext : DbContext
 
             entity.ToTable("object");
 
-            entity.HasIndex(e => e.IdAddress, "object_ibfk_1");
+            entity.HasIndex(e => e.IdAddress, "id_address");
 
             entity.Property(e => e.IdObject).HasColumnName("id_object");
             entity.Property(e => e.IdAddress).HasColumnName("id_address");
@@ -178,7 +177,7 @@ public partial class diplomContext : DbContext
 
             entity.HasIndex(e => new { e.IdObject, e.IdService }, "id_object").IsUnique();
 
-            entity.HasIndex(e => e.IdService, "rate_ibfk_2");
+            entity.HasIndex(e => e.IdService, "id_service");
 
             entity.Property(e => e.IdRate).HasColumnName("id_rate");
             entity.Property(e => e.HourlyRate)
@@ -189,12 +188,10 @@ public partial class diplomContext : DbContext
 
             entity.HasOne(d => d.IdObjectNavigation).WithMany(p => p.Rates)
                 .HasForeignKey(d => d.IdObject)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("rate_ibfk_1");
 
             entity.HasOne(d => d.IdServiceNavigation).WithMany(p => p.Rates)
                 .HasForeignKey(d => d.IdService)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("rate_ibfk_2");
         });
 
@@ -216,11 +213,11 @@ public partial class diplomContext : DbContext
 
             entity.ToTable("work_schedule");
 
-            entity.HasIndex(e => e.IdEmployee, "work_schedule_ibfk_1");
+            entity.HasIndex(e => e.IdEmployee, "id_employee");
 
-            entity.HasIndex(e => e.IdRate, "work_schedule_ibfk_3");
+            entity.HasIndex(e => e.IdObject, "id_object");
 
-            entity.HasIndex(e => e.IdService, "work_schedule_ibfk_4");
+            entity.HasIndex(e => e.IdRate, "id_rate");
 
             entity.Property(e => e.IdSchedule).HasColumnName("id_schedule");
             entity.Property(e => e.DailyHours)
@@ -232,7 +229,6 @@ public partial class diplomContext : DbContext
             entity.Property(e => e.IdEmployee).HasColumnName("id_employee");
             entity.Property(e => e.IdObject).HasColumnName("id_object");
             entity.Property(e => e.IdRate).HasColumnName("id_rate");
-            entity.Property(e => e.IdService).HasColumnName("id_service");
             entity.Property(e => e.Notes)
                 .HasColumnType("text")
                 .HasColumnName("notes");
@@ -253,15 +249,15 @@ public partial class diplomContext : DbContext
                 .HasForeignKey(d => d.IdEmployee)
                 .HasConstraintName("work_schedule_ibfk_1");
 
+            entity.HasOne(d => d.IdObjectNavigation).WithMany(p => p.WorkSchedules)
+                .HasForeignKey(d => d.IdObject)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_schedule_ibfk_2");
+
             entity.HasOne(d => d.IdRateNavigation).WithMany(p => p.WorkSchedules)
                 .HasForeignKey(d => d.IdRate)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("work_schedule_ibfk_3");
-
-            entity.HasOne(d => d.IdServiceNavigation).WithMany(p => p.WorkSchedules)
-                .HasForeignKey(d => d.IdService)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("work_schedule_ibfk_4");
         });
 
         OnModelCreatingPartial(modelBuilder);
