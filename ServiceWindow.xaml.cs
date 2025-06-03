@@ -43,7 +43,7 @@ namespace DiplomProject
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки должностей: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка загрузки услуг: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -53,7 +53,7 @@ namespace DiplomProject
 
             if (string.IsNullOrWhiteSpace(serviceName))
             {
-                MessageBox.Show("Введите название должности", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Введите название услуги", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -64,7 +64,7 @@ namespace DiplomProject
 
                 if (exists)
                 {
-                    MessageBox.Show("Должность с таким названием уже существует", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Услуга с таким названием уже существует", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -76,11 +76,11 @@ namespace DiplomProject
                 LoadServices();
                 UpdatePositionComboBox();
 
-                MessageBox.Show("Должность успешно добавлена", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Услуга успешно добавлена", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при добавлении должности: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка при добавлении услуги: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -93,11 +93,11 @@ namespace DiplomProject
 
             if (isUsed)
             {
-                MessageBox.Show("Невозможно удалить должность, так как она используется в ставках", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Невозможно удалить услугу, так как она используется в ставках", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show($"Вы уверены, что хотите удалить должность '{selectedService.ServiceName}'?",
+            var result = MessageBox.Show($"Вы уверены, что хотите удалить услугу '{selectedService.ServiceName}'?",
                 "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
@@ -110,11 +110,11 @@ namespace DiplomProject
                     LoadServices();
                     UpdatePositionComboBox();
 
-                    MessageBox.Show("Должность успешно удалена", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Услуга успешно удалена", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка при удалении должности: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Ошибка при удалении услуги: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -136,7 +136,7 @@ namespace DiplomProject
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка обновления списка должностей: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка обновления списка услуг: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

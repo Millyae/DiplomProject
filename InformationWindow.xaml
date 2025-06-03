@@ -120,6 +120,7 @@
                 </StackPanel>
             </Border>
         </Grid>
+
         <StatusBar Grid.Row="2">
             <StatusBarItem>
                 <TextBlock x:Name="StatusTextBlock"/>

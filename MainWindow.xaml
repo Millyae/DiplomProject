@@ -105,7 +105,7 @@
 
                 <Border Grid.Row="0" Background="#FF483D8B" CornerRadius="10,10,0,0" Height="40">
                     <Grid>
-                        <TextBlock Text="Employee Management System" Foreground="White" FontSize="16" VerticalAlignment="Center" Margin="20,0" FontWeight="SemiBold"/>
+                        <TextBlock Text="Учёт Сотрудников" Foreground="White" FontSize="16" VerticalAlignment="Center" Margin="20,0" FontWeight="SemiBold"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="_" Width="40" Background="Transparent" Foreground="White"/>
                             <Button Content="✕" Width="40" Background="Transparent" Foreground="White" Cursor="" Click="ExitButton_Click"/>
@@ -122,7 +122,7 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
-                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                <MenuItem Header="Меню" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
                                     <MenuItem Header="Выйти" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ExitButton_Click"/>
                                 </MenuItem>
                             </Menu>
@@ -148,12 +148,13 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
-                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                <MenuItem Header="Меню" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
                                     <MenuItem Header="Добавить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddButton_Click"/>
                                     <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="SaveButton_Click"/>
                                     <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteButton_Click"/>
                                     <MenuItem Header="Импорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="Import_Click"/>
                                     <MenuItem Header="Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="Export_Click"/>
+                                    <MenuItem Header="Обновить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="RefreshButton_Click"/>
                                 </MenuItem>
                             </Menu>
                             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">
@@ -161,9 +162,9 @@
                             </StackPanel>
                             <DataGrid x:Name="EmployeeDataGrid" Margin="67,66,82,66" Grid.Row="1" Background="White" Foreground="Black"/>
                             <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
-                                <Button x:Name="DeleteButton" Content="Удаление" Width="120" Height="40" Margin="10" Click="DeleteButton_Click"/>
-                                <Button x:Name="SaveButton" Content="Сохранение" Width="120" Height="40" Margin="10" Click="SaveButton_Click"/>
-                                <Button x:Name="AddButton" Content="Добавление" Width="120" Height="40" Margin="10" Click="AddButton_Click"/>
+                                <Button x:Name="DeleteButton" Content="Удалить" Width="120" Height="40" Margin="10" Click="DeleteButton_Click"/>
+                                <Button x:Name="SaveButton" Content="Сохранить" Width="120" Height="40" Margin="10" Click="SaveButton_Click"/>
+                                <Button x:Name="AddButton" Content="Добавить" Width="120" Height="40" Margin="10" Click="AddButton_Click"/>
                             </StackPanel>
                         </Grid>
                     </TabItem>
@@ -175,9 +176,9 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
-                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                <MenuItem Header="Меню" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
                                     <MenuItem Header="Добавить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddObjectButton_Click"/>
-                                    <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddObjectButton_Click"/>
+                                    <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="SaveButton_Click"/>
                                     <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteObjectButton_Click"/>
                                     <MenuItem Header="Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ObjectExport_Click"/>
                                     <MenuItem Header="Импорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ObjectImport_Click"/>
@@ -188,9 +189,9 @@
                             </StackPanel>
                             <DataGrid x:Name="ObjectDataGrid" Margin="67,66,82,66" Grid.Row="1" Background="White" Foreground="Black"/>
                             <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
-                                <Button x:Name="DeleteObjectButton" Content="Удаление" Width="120" Height="40" Margin="10" Click="DeleteObjectButton_Click"/>
-                                <Button x:Name="SaveObjectButton" Content="Сохранение" Width="120" Height="40" Margin="10" Click="SaveObjectButton_Click"/>
-                                <Button x:Name="AddObjectButton" Content="Добавление" Width="120" Height="40" Margin="10" Click="AddObjectButton_Click"/>
+                                <Button x:Name="DeleteObjectButton" Content="Удалить" Width="120" Height="40" Margin="10" Click="DeleteObjectButton_Click"/>
+                                <Button x:Name="SaveObjectButton" Content="Сохранить" Width="120" Height="40" Margin="10" Click="SaveObjectButton_Click"/>
+                                <Button x:Name="AddObjectButton" Content="Добавить" Width="120" Height="40" Margin="10" Click="AddObjectButton_Click"/>
                             </StackPanel>
                         </Grid>
                     </TabItem>
@@ -203,10 +204,10 @@
                             </Grid.RowDefinitions>
 
                             <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
-                                <MenuItem Header="Файл" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
-                                    <MenuItem Header="Добавить Должность" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddNewRate_Click"/>
-                                    <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" />
-                                    <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" />
+                                <MenuItem Header="Меню" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
+                                    <MenuItem Header="Добавить Услугу" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddNewRate_Click"/>
+                                    <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="SaveRateButton_Click" />
+                                    <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteRateButton_Click_1"/>
                                     <MenuItem Header="Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="RateExport_Click" />
                                     <MenuItem Header="Импорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="ObjectImport_Click"/>
                                 </MenuItem>
@@ -218,7 +219,8 @@
                             </StackPanel>
 
                             <DataGrid x:Name="RateDataGrid" Grid.Row="1" Margin="10" Background="White" Foreground="Black" AutoGenerateColumns="False" 
-                  CanUserAddRows="False" BeginningEdit="RateDataGrid_BeginningEdit">
+                  CanUserAddRows="False" BeginningEdit="RateDataGrid_BeginningEdit" 
+                                      SelectionChanged="RateDataGrid_SelectionChanged" SelectionMode="Single">
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Header="Объект" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
@@ -240,7 +242,7 @@
 
                                     <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" IsReadOnly="True" Width="*"/>
 
-                                    <DataGridTemplateColumn Header="Должность" Width="*">
+                                    <DataGridTemplateColumn Header="Наименование услуги" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding ServiceName}" VerticalAlignment="Center"/>
@@ -262,9 +264,9 @@
                             </DataGrid>
 
                             <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal" Margin="10">
-                                <Button x:Name="AddRateButton" Content="Добавить ставку" Width="120" Height="40" Margin="10" Click="AddRateButton_Click"/>
-                                <Button x:Name="DeleteRateButton" Content="Удалить" Width="120" Height="40" Margin="10" Click="DeleteRateButton_Click"/>
-                                <Button x:Name="SaveRateButton" Content="Сохранить все" Width="120" Height="40" Margin="10" Click="SaveRateButton_Click"/>
+                                <Button x:Name="AddRateButton" Content="Добавить" Width="120" Height="40" Margin="10" Click="AddRateButton_Click"/>
+                                <Button x:Name="DeleteRateButton" Content="Удалить" Width="120" Height="40" Margin="10" Click="DeleteRateButton_Click_1" />
+                                <Button x:Name="SaveRateButton" Content="Сохранить" Width="120" Height="40" Margin="10" Click="SaveRateButton_Click"/>
                             </StackPanel>
                         </Grid>
                     </TabItem>

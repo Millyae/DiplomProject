@@ -15,5 +15,11 @@ public partial class Fullname
 
     public string MiddleName { get; set; }
 
+    public byte[] LastNameEnc { get; set; }
+
+    public byte[] FirstNameEnc { get; set; }
+
+    public byte[] MiddleNameEnc { get; set; }
+
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

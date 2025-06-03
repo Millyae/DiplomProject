@@ -2,9 +2,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace DiplomProject.Models;
@@ -35,21 +33,9 @@ public partial class diplomContext : DbContext
     public virtual DbSet<WorkSchedule> WorkSchedules { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseMySql("server=localhost;database=db_diplom;uid=root;pwd=SQL123", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
 
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-            optionsBuilder.UseMySql(
-                connectionString,
-                ServerVersion.Parse("8.0.40-mysql"));
-        }
-    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -100,7 +86,11 @@ public partial class diplomContext : DbContext
                 .HasColumnName("comments");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
-                .HasColumnName("email");
+                .HasColumnName("email")
+                .UseCollation("utf8mb4_unicode_ci");
+            entity.Property(e => e.EmailEnc)
+                .HasMaxLength(255)
+                .HasColumnName("email_enc");
             entity.Property(e => e.Experience)
                 .HasColumnType("text")
                 .HasColumnName("experience");
@@ -113,9 +103,12 @@ public partial class diplomContext : DbContext
                 .HasColumnType("text")
                 .HasColumnName("notes");
             entity.Property(e => e.Phone)
-                .IsRequired()
                 .HasMaxLength(20)
-                .HasColumnName("phone");
+                .HasColumnName("phone")
+                .UseCollation("utf8mb4_unicode_ci");
+            entity.Property(e => e.PhoneEnc)
+                .HasMaxLength(255)
+                .HasColumnName("phone_enc");
             entity.Property(e => e.Salary)
                 .HasPrecision(10, 2)
                 .HasColumnName("salary");
@@ -136,16 +129,26 @@ public partial class diplomContext : DbContext
 
             entity.Property(e => e.IdFullname).HasColumnName("id_fullname");
             entity.Property(e => e.FirstName)
-                .IsRequired()
                 .HasMaxLength(100)
-                .HasColumnName("first_name");
+                .HasColumnName("first_name")
+                .UseCollation("utf8mb4_unicode_ci");
+            entity.Property(e => e.FirstNameEnc)
+                .HasMaxLength(255)
+                .HasColumnName("first_name_enc");
             entity.Property(e => e.LastName)
-                .IsRequired()
                 .HasMaxLength(100)
-                .HasColumnName("last_name");
+                .HasColumnName("last_name")
+                .UseCollation("utf8mb4_unicode_ci");
+            entity.Property(e => e.LastNameEnc)
+                .HasMaxLength(255)
+                .HasColumnName("last_name_enc");
             entity.Property(e => e.MiddleName)
                 .HasMaxLength(100)
-                .HasColumnName("middle_name");
+                .HasColumnName("middle_name")
+                .UseCollation("utf8mb4_unicode_ci");
+            entity.Property(e => e.MiddleNameEnc)
+                .HasMaxLength(255)
+                .HasColumnName("middle_name_enc");
         });
 
         modelBuilder.Entity<Object>(entity =>
@@ -177,7 +180,7 @@ public partial class diplomContext : DbContext
 
             entity.HasIndex(e => new { e.IdObject, e.IdService }, "id_object").IsUnique();
 
-            entity.HasIndex(e => e.IdService, "id_service");
+            entity.HasIndex(e => e.IdService, "rate_ibfk_2");
 
             entity.Property(e => e.IdRate).HasColumnName("id_rate");
             entity.Property(e => e.HourlyRate)
@@ -188,6 +191,7 @@ public partial class diplomContext : DbContext
 
             entity.HasOne(d => d.IdObjectNavigation).WithMany(p => p.Rates)
                 .HasForeignKey(d => d.IdObject)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("rate_ibfk_1");
 
             entity.HasOne(d => d.IdServiceNavigation).WithMany(p => p.Rates)
@@ -215,8 +219,6 @@ public partial class diplomContext : DbContext
 
             entity.HasIndex(e => e.IdEmployee, "id_employee");
 
-            entity.HasIndex(e => e.IdObject, "id_object");
-
             entity.HasIndex(e => e.IdRate, "id_rate");
 
             entity.Property(e => e.IdSchedule).HasColumnName("id_schedule");
@@ -227,7 +229,6 @@ public partial class diplomContext : DbContext
                 .HasColumnType("time")
                 .HasColumnName("end_time");
             entity.Property(e => e.IdEmployee).HasColumnName("id_employee");
-            entity.Property(e => e.IdObject).HasColumnName("id_object");
             entity.Property(e => e.IdRate).HasColumnName("id_rate");
             entity.Property(e => e.Notes)
                 .HasColumnType("text")
@@ -248,11 +249,6 @@ public partial class diplomContext : DbContext
             entity.HasOne(d => d.IdEmployeeNavigation).WithMany(p => p.WorkSchedules)
                 .HasForeignKey(d => d.IdEmployee)
                 .HasConstraintName("work_schedule_ibfk_1");
-
-            entity.HasOne(d => d.IdObjectNavigation).WithMany(p => p.WorkSchedules)
-                .HasForeignKey(d => d.IdObject)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_schedule_ibfk_2");
 
             entity.HasOne(d => d.IdRateNavigation).WithMany(p => p.WorkSchedules)
                 .HasForeignKey(d => d.IdRate)

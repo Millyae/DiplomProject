@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DiplomProject"
         mc:Ignorable="d"
-        Title="Управление должностями" 
+        Title="Управление услугами" 
         Height="450" 
         Width="800"
         WindowStartupLocation="CenterOwner">
@@ -47,7 +47,7 @@
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="NewServiceTextBox" Width="300" Height="30" Margin="5" 
                          VerticalContentAlignment="Center" FontSize="14"/>
-                <Button Content="Добавить должность" Width="200" Height="30" Margin="5"
+                <Button Content="Добавить услугу" Width="200" Height="30" Margin="5"
                         Click="AddServiceButton_Click"/>
             </StackPanel>
         </Border>
@@ -59,7 +59,7 @@
                   SelectionMode="Single">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding IdService}" Width="Auto"/>
-                <DataGridTextColumn Header="Название должности" Binding="{Binding ServiceName}" Width="*"/>
+                <DataGridTextColumn Header="Наименование услуги" Binding="{Binding ServiceName}" Width="*"/>
                 <DataGridTemplateColumn Width="Auto">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

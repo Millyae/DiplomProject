@@ -29,6 +29,10 @@ public partial class Employee
 
     public decimal? Salary { get; set; }
 
+    public byte[] PhoneEnc { get; set; }
+
+    public byte[] EmailEnc { get; set; }
+
     public virtual Fullname IdFullnameNavigation { get; set; }
 
     public virtual ICollection<WorkSchedule> WorkSchedules { get; set; } = new List<WorkSchedule>();

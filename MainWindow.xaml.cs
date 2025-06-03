@@ -69,7 +69,7 @@ namespace DiplomProject
                     case "FirstName": e.Column.Header = "Имя"; break;
                     case "MiddleName": e.Column.Header = "Отчество"; break;
                     case "Phone": e.Column.Header = "Телефон"; break;
-                    case "Email": e.Column.Header = "Email"; break;
+                    case "Email": e.Column.Header = "Почта"; break;
                     case "Metro": e.Column.Header = "Метро"; break;
                     case "HireDate": e.Column.Header = "Дата приема"; break;
                     case "Experience": e.Column.Header = "Опыт"; break;
@@ -112,6 +112,38 @@ namespace DiplomProject
                     case "HourlyRate": e.Column.Header = "Ставка"; break;
                 }
             };
+        }
+
+        private void RefreshData()
+        {
+            try
+            {
+                _context.ChangeTracker.Clear(); 
+                LoadEmployees();
+                LoadObjects();   
+                LoadRates();   
+                MessageBox.Show("Данные успешно обновлены", "Обновление",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при обновлении данных: {ex.Message}", "Ошибка",
+                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadEmployees();
+        }
+
+        private void UpdateMainWindow()
+        {
+            if (this.Owner is MainWindow mainWindow)
+            {
+                mainWindow.LoadRates();
+                
+            }
         }
 
         private void LoadEmployeesPanel()
@@ -246,46 +278,10 @@ namespace DiplomProject
         }
 
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        /*private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                bool hasErrors = false;
-                StringBuilder errorMessages = new StringBuilder();
-
-                foreach (var item in EmployeeDataGrid.Items)
-                {
-                    if (item is EmployeeViewModel employeeVM)
-                    {
-                        var hireDateValidation = EmployeeValidation.ValidateHireDate(employeeVM.HireDate);
-                        if (!hireDateValidation.IsValid)
-                        {
-                            hasErrors = true;
-                            errorMessages.AppendLine($"Сотрудник {employeeVM.LastName}: {hireDateValidation.ErrorMessage}");
-                        }
-
-                        var emailValidation = EmployeeValidation.ValidateEmail(employeeVM.Email, _context, employeeVM.IdEmployee);
-                        if (!emailValidation.IsValid)
-                        {
-                            hasErrors = true;
-                            errorMessages.AppendLine($"Сотрудник {employeeVM.LastName}: {emailValidation.ErrorMessage}");
-                        }
-
-                        var phoneValidation = EmployeeValidation.ValidatePhone(employeeVM.Phone, _context, employeeVM.IdEmployee);
-                        if (!phoneValidation.IsValid)
-                        {
-                            hasErrors = true;
-                            errorMessages.AppendLine($"Сотрудник {employeeVM.LastName}: {phoneValidation.ErrorMessage}");
-                        }
-                    }
-                }
-
-                if (hasErrors)
-                {
-                    MessageBox.Show($"Обнаружены ошибки:\n{errorMessages}", "Ошибки валидации", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
                 foreach (var item in EmployeeDataGrid.Items)
                 {
                     if (item is EmployeeViewModel employeeVM)
@@ -325,7 +321,96 @@ namespace DiplomProject
             {
                 MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }*/
+
+
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var validationErrors = new List<string>();
+
+                foreach (var item in EmployeeDataGrid.Items)
+                {
+                    if (item is EmployeeViewModel employeeVM)
+                    {
+                        var emailValidation = EmployeeValidation.ValidateEmail(employeeVM.Email, _context, employeeVM.IdEmployee);
+                        if (!emailValidation.IsValid)
+                        {
+                            validationErrors.Add($"Сотрудник {employeeVM.LastName} {employeeVM.FirstName}: {emailValidation.ErrorMessage}");
+                        }
+
+                        var phoneValidation = EmployeeValidation.ValidatePhone(employeeVM.Phone, _context, employeeVM.IdEmployee);
+                        if (!phoneValidation.IsValid)
+                        {
+                            validationErrors.Add($"Сотрудник {employeeVM.LastName} {employeeVM.FirstName}: {phoneValidation.ErrorMessage}");
+                        }
+
+                        var hireDateValidation = EmployeeValidation.ValidateHireDate(employeeVM.HireDate);
+                        if (!hireDateValidation.IsValid)
+                        {
+                            validationErrors.Add($"Сотрудник {employeeVM.LastName} {employeeVM.FirstName}: {hireDateValidation.ErrorMessage}");
+                        }
+                    }
+                }
+
+                if (validationErrors.Any())
+                {
+                    MessageBox.Show($"Обнаружены ошибки:\n\n{string.Join("\n", validationErrors)}",
+                                  "Ошибки валидации",
+                                  MessageBoxButton.OK,
+                                  MessageBoxImage.Warning);
+                    return;
+                }
+
+                foreach (var item in EmployeeDataGrid.Items)
+                {
+                    if (item is EmployeeViewModel employeeVM)
+                    {
+                        var employee = _context.Employees
+                            .Include(e => e.IdFullnameNavigation)
+                            .FirstOrDefault(e => e.IdEmployee == employeeVM.IdEmployee);
+
+                        if (employee != null)
+                        {
+                            employee.Email = employeeVM.Email;
+                            employee.Phone = employeeVM.Phone;
+                            employee.HireDate = employeeVM.HireDate;
+                            employee.Metro = employeeVM.Metro;
+                            employee.Experience = employeeVM.Experience;
+                            employee.Schedules = employeeVM.Schedules;
+                            employee.Notes = employeeVM.Notes;
+                            employee.Comments = employeeVM.Comments;
+
+                            if (employee.IdFullnameNavigation == null)
+                            {
+                                employee.IdFullnameNavigation = new Fullname();
+                            }
+
+                            employee.IdFullnameNavigation.LastName = employeeVM.LastName;
+                            employee.IdFullnameNavigation.FirstName = employeeVM.FirstName;
+                            employee.IdFullnameNavigation.MiddleName = employeeVM.MiddleName;
+                        }
+                    }
+                }
+
+                _context.SaveChanges();
+                MessageBox.Show("Изменения сохранены", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadData();
+            }
+            catch (DbUpdateException ex)
+            {
+                string errorDetails = GetExceptionDetails(ex);
+                MessageBox.Show($"Ошибка сохранения в базе данных: {errorDetails}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Непредвиденная ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
+        
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
@@ -595,7 +680,7 @@ namespace DiplomProject
             var newRate = new RateViewModel
             {
                 HourlyRate = 0.00m,
-                ServiceName = "Выберите должность",
+                ServiceName = "Выберите услугу",
                 ObjectName = "Выберите объект",
                 Address = "Адрес будет выбран автоматически"
             };
@@ -650,7 +735,7 @@ namespace DiplomProject
                     if (existingRate != null)
                     {
                         var objectName = _context.Objects.Find(rate.IdObject)?.ObjectName ?? "Объект";
-                        var serviceName = _context.Services.Find(rate.IdService)?.ServiceName ?? "Должность";
+                        var serviceName = _context.Services.Find(rate.IdService)?.ServiceName ?? "Услуга";
 
                         MessageBox.Show($"Ставка для {objectName} и {serviceName} уже существует", "Дублирование данных");
                         return;
@@ -693,36 +778,50 @@ namespace DiplomProject
             }
         }
 
-        private void DeleteRateButton_Click(object sender, RoutedEventArgs e)
+        private void RateDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_selectedRate == null) return;
+            _selectedRate = RateDataGrid.SelectedItem as RateViewModel;
+        }
 
-            var result = MessageBox.Show("Вы уверены, что хотите удалить эту ставку?","Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        private void DeleteRateButton_Click_1(object sender, RoutedEventArgs e)
+        {
+            var selected = _selectedRate ?? RateDataGrid.SelectedItem as RateViewModel;
+
+            if (selected == null)
+            {
+                MessageBox.Show("Выберите ставку для удаления");
+                return;
+            }
+
+            var result = MessageBox.Show("Вы уверены, что хотите удалить эту ставку?",
+                                        "Подтверждение удаления",
+                                        MessageBoxButton.YesNo,
+                                        MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
                 try
                 {
-                    if (_selectedRate.IdRate > 0) 
+                    if (selected.IdRate > 0)
                     {
-                        var rateToDelete = _context.Rates.Find(_selectedRate.IdRate);
+                        var rateToDelete = _context.Rates.Find(selected.IdRate);
                         if (rateToDelete != null)
                         {
                             _context.Rates.Remove(rateToDelete);
-                            _context.SaveChanges();
                         }
                     }
 
                     if (RateDataGrid.ItemsSource is ObservableCollection<RateViewModel> collection)
                     {
-                        collection.Remove(_selectedRate);
+                        collection.Remove(selected);
                     }
                     else if (RateDataGrid.ItemsSource is IList<RateViewModel> list)
                     {
-                        list.Remove(_selectedRate);
-                        RateDataGrid.ItemsSource = list;
+                        list.Remove(selected);
+                        RateDataGrid.Items.Refresh();
                     }
 
+                    _context.SaveChanges();
                     MessageBox.Show("Ставка успешно удалена");
                 }
                 catch (Exception ex)
@@ -759,7 +858,7 @@ namespace DiplomProject
                     {
                         var worksheet = package.Workbook.Worksheets.Add("Сотрудники");
 
-                        string[] headers = { "№", "Фамилия", "Имя", "Отчество", "Телефон", "Email", "Метро",
+                        string[] headers = { "№", "Фамилия", "Имя", "Отчество", "Телефон", "Почта", "Метро",
                           "Дата приема", "Опыт", "График", "Заметки", "Комментарии" };
 
                         for (int i = 0; i < headers.Length; i++)
@@ -817,7 +916,7 @@ namespace DiplomProject
                 SaveFileDialog saveFileDialog = new SaveFileDialog
                 {
                     Filter = "Excel files (*.xlsx)|*.xlsx",
-                    FileName = $"Сотрудники_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                    FileName = $"Объекты_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
                     DefaultExt = ".xlsx",
                     Title = "Выберите место для сохранения файла"
                 };
@@ -826,7 +925,7 @@ namespace DiplomProject
                 {
                     using (var package = new ExcelPackage())
                     {
-                        var worksheet = package.Workbook.Worksheets.Add("Сотрудники");
+                        var worksheet = package.Workbook.Worksheets.Add("Объекты");
 
                         string[] headers = { "№", "Наименование обЪекта", "Индекс", "Страна", "Город", "Улица", "Дом",
                                   "Корпус", "Офис", "Полный Адрес" };
@@ -885,7 +984,7 @@ namespace DiplomProject
                 SaveFileDialog saveFileDialog = new SaveFileDialog
                 {
                     Filter = "Excel files (*.xlsx)|*.xlsx",
-                    FileName = $"Сотрудники_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                    FileName = $"Ставки_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
                     DefaultExt = ".xlsx",
                     Title = "Выберите место для сохранения файла"
                 };
@@ -896,7 +995,7 @@ namespace DiplomProject
                     {
                         var worksheet = package.Workbook.Worksheets.Add("Ставки");
 
-                        string[] headers = { "№", "Наименование обЪекта", "Адрес", "Должность", "Ставка" };
+                        string[] headers = { "№", "Наименование обЪекта", "Адрес", "Услуга", "Ставка" };
 
                         for (int i = 0; i < headers.Length; i++)
                         {
@@ -935,11 +1034,15 @@ namespace DiplomProject
         {
             try
             {
+
                 OpenFileDialog openFileDialog = new OpenFileDialog
                 {
                     Filter = "Excel files (*.xlsx)|*.xlsx",
                     Title = "Выберите файл для импорта сотрудников"
                 };
+
+
+                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
 
                 if (openFileDialog.ShowDialog() == true)
                 {
@@ -1050,6 +1153,8 @@ namespace DiplomProject
                     Title = "Выберите файл для импорта объектов"
                 };
 
+                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
                 if (openFileDialog.ShowDialog() == true)
                 {
                     using (var package = new ExcelPackage(new FileInfo(openFileDialog.FileName)))
@@ -1127,6 +1232,8 @@ namespace DiplomProject
                     Filter = "Excel files (*.xlsx)|*.xlsx",
                     Title = "Выберите файл для импорта ставок"
                 };
+
+                ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
 
                 if (openFileDialog.ShowDialog() == true)
                 {
@@ -1255,7 +1362,7 @@ namespace DiplomProject
         private void RateDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
         {
             if (e.Column.Header.ToString() != "Объект" &&
-                e.Column.Header.ToString() != "Должность" &&
+                e.Column.Header.ToString() != "Услуга" &&
                 e.Column.Header.ToString() != "Ставка")
             {
                 e.Cancel = true;
@@ -1381,5 +1488,7 @@ namespace DiplomProject
 
             RateDataGrid.ItemsSource = filtered;
         }
+
+        
     }
 }
