@@ -97,8 +97,7 @@ namespace DiplomProject
                 return;
             }
 
-            var result = MessageBox.Show($"Вы уверены, что хотите удалить услугу '{selectedService.ServiceName}'?",
-                "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show($"Вы уверены, что хотите удалить услугу '{selectedService.ServiceName}'?","Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {

@@ -13,12 +13,14 @@ namespace DiplomProject
 {
     public partial class InformationWindow : Window
     {
+        private string _currentUserRole;
         private readonly diplomContext _context;
         private readonly int _employeeId;
         private Employee _currentEmployee;
         private WorkScheduleDisplay _selectedSchedule;
 
-        public InformationWindow(int employeeId)
+
+        public InformationWindow(int employeeId, string userRoles)
         {
             InitializeComponent();
             _context = new diplomContext();
@@ -28,8 +30,24 @@ namespace DiplomProject
             LoadComboBoxData();
             LoadWorkScheduleData();
             UpdateSummaryInfo();
+            SetPermissionsBasedOnRole();
+            _currentUserRole = userRoles;
 
             WorkHoursDataGrid.SelectionChanged += WorkHoursDataGrid_SelectionChanged;
+        }
+
+
+
+        private void SetPermissionsBasedOnRole()
+        {
+            if (_currentUserRole == "Manager")
+            {
+                DeleteButton.Visibility = Visibility.Collapsed;
+            }
+            else if (_currentUserRole == "Admin")
+            {
+                DeleteButton.Visibility = Visibility.Visible;
+            }
         }
 
         private void UpdateSummaryInfo()
@@ -66,7 +84,7 @@ namespace DiplomProject
             }
         }
 
-        public void LoadEmployeeData()
+        internal void LoadEmployeeData()
         {
             _currentEmployee = _context.Employees
                 .Include(e => e.IdFullnameNavigation)
@@ -255,7 +273,6 @@ namespace DiplomProject
             }
             catch (DbUpdateException ex)
             {
-                // Получение внутреннего исключения
                 var innerException = ex.InnerException;
                 while (innerException != null)
                 {
@@ -292,7 +309,7 @@ namespace DiplomProject
             return false; 
         }
 
-        public bool ValidateInputs()
+        internal bool ValidateInputs()
         {
             if (ObjectComboBox.SelectedItem == null)
             {
@@ -341,6 +358,12 @@ namespace DiplomProject
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_currentUserRole != "Admin")
+            {
+                MessageBox.Show("У вас нет прав для выполнения этого действия", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (_selectedSchedule == null) return;
 
             var result = MessageBox.Show("Вы уверены, что хотите удалить эту запись?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -461,232 +484,3 @@ namespace DiplomProject
         }
     }
 }
-
-/*using DiplomProject;
-using DiplomProject.Models;
-using Microsoft.EntityFrameworkCore;
-using NUnit.Framework;
-using System;
-using System.Linq;
-
-namespace TestProject
-{
-    [TestFixture]
-    public class InformationWindowTests
-    {
-        private diplomContext _context;
-        private InformationWindow _window;
-        private int _testEmployeeId;
-
-        [SetUp]
-        public void Setup()
-        {
-            // Используем InMemory базу данных для тестов
-            var options = new DbContextOptionsBuilder<diplomContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
-
-            _context = new diplomContext(options);
-            SeedTestData();
-
-            _testEmployeeId = _context.Employees.First().IdEmployee;
-            _window = new InformationWindow(_testEmployeeId);
-        }
-
-        private void SeedTestData()
-        {
-            // Добавляем тестовые данные
-            var employee = new Employee
-            {
-                IdFullnameNavigation = new Fullname
-                {
-                    LastName = "Test",
-                    FirstName = "User",
-                    MiddleName = "Middle"
-                },
-                Phone = "1234567890",
-                Email = "test@example.com"
-            };
-            _context.Employees.Add(employee);
-
-            var service = new Service { ServiceName = "Test Service" };
-            _context.Services.Add(service);
-
-            var address = new Address
-            {
-                Country = "Russia",
-                City = "Moscow",
-                Street = "Test Street",
-                Building = "1"
-            };
-            _context.Addresses.Add(address);
-
-            var obj = new DiplomProject.Models.Object
-            {
-                ObjectName = "Test Object",
-                IdAddressNavigation = address
-            };
-            _context.Objects.Add(obj);
-
-            var rate = new Rate
-            {
-                IdObject = obj.IdObject,
-                IdService = service.IdService,
-                HourlyRate = 100
-            };
-            _context.Rates.Add(rate);
-
-            _context.SaveChanges();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _window.Close();
-            _context.Dispose();
-        }
-
-        [Test]
-        public void LoadEmployeeData_ShouldDisplayCorrectEmployeeInfo()
-        {
-            // Act
-            _window.LoadEmployeeData();
-
-            // Assert
-            Assert.That(_window.FullNameTextBlock.Text, Is.EqualTo("Test User Middle"));
-            Assert.That(_window.PhoneTextBlock.Text, Is.EqualTo("Телефон: 1234567890"));
-            Assert.That(_window.EmailTextBlock.Text, Is.EqualTo("Email: test@example.com"));
-        }
-
-        [Test]
-        public void LoadComboBoxData_ShouldPopulateComboBoxes()
-        {
-            // Act
-            _window.LoadComboBoxData();
-
-            // Assert
-            Assert.That(_window.ObjectComboBox.Items.Count, Is.GreaterThan(0));
-            Assert.That(_window.ServiceComboBox.Items.Count, Is.GreaterThan(0));
-            Assert.That(_window.WorkDatePicker.SelectedDate, Is.EqualTo(DateTime.Today));
-        }
-
-        [Test]
-        public void ValidateInputs_WithValidData_ReturnsTrue()
-        {
-            // Arrange
-            _window.ObjectComboBox.SelectedIndex = 0;
-            _window.ServiceComboBox.SelectedIndex = 0;
-            _window.WorkDatePicker.SelectedDate = DateTime.Today;
-            _window.StartTimeTextBox.Text = "09:00";
-            _window.EndTimeTextBox.Text = "18:00";
-
-            // Act
-            var result = _window.ValidateInputs();
-
-            // Assert
-            Assert.That(result, Is.True);
-        }
-
-        [Test]
-        public void ValidateInputs_WithMissingObject_ReturnsFalse()
-        {
-            // Arrange
-            _window.ObjectComboBox.SelectedItem = null;
-            _window.ServiceComboBox.SelectedIndex = 0;
-            _window.WorkDatePicker.SelectedDate = DateTime.Today;
-            _window.StartTimeTextBox.Text = "09:00";
-            _window.EndTimeTextBox.Text = "18:00";
-
-            // Act
-            var result = _window.ValidateInputs();
-
-            // Assert
-            Assert.That(result, Is.False);
-        }
-
-        [Test]
-        public void HasTimeConflict_WithConflictingTime_ReturnsTrue()
-        {
-            // Arrange
-            var existingSchedule = new WorkSchedule
-            {
-                IdEmployee = _testEmployeeId,
-                IdRate = _context.Rates.First().IdRate,
-                WorkDate = DateOnly.FromDateTime(DateTime.Today),
-                StartTime = new TimeOnly(10, 0),
-                EndTime = new TimeOnly(12, 0),
-                DailyHours = 2
-            };
-            _context.WorkSchedules.Add(existingSchedule);
-            _context.SaveChanges();
-
-            var testDate = DateOnly.FromDateTime(DateTime.Today);
-            var newStartTime = new TimeOnly(11, 0);
-            var newEndTime = new TimeOnly(13, 0);
-
-            // Act
-            var result = _window.HasTimeConflict(_testEmployeeId, testDate, newStartTime, newEndTime);
-
-            // Assert
-            Assert.That(result, Is.True);
-        }
-
-        [Test]
-        public void UpdateSummaryInfo_ShouldCalculateCorrectTotals()
-        {
-            // Arrange
-            var schedule1 = new WorkSchedule
-            {
-                IdEmployee = _testEmployeeId,
-                IdRate = _context.Rates.First().IdRate,
-                WorkDate = DateOnly.FromDateTime(DateTime.Today),
-                StartTime = new TimeOnly(9, 0),
-                EndTime = new TimeOnly(13, 0),
-                DailyHours = 4
-            };
-
-            var schedule2 = new WorkSchedule
-            {
-                IdEmployee = _testEmployeeId,
-                IdRate = _context.Rates.First().IdRate,
-                WorkDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
-                StartTime = new TimeOnly(10, 0),
-                EndTime = new TimeOnly(18, 0),
-                DailyHours = 8
-            };
-
-            _context.WorkSchedules.AddRange(schedule1, schedule2);
-            _context.SaveChanges();
-
-            // Act
-            _window.LoadWorkScheduleData();
-            _window.UpdateSummaryInfo();
-
-            // Assert
-            Assert.That(_window.SummaryTextBlock.Text,
-                Is.EqualTo($"Всего дней: 2 | Всего часов: 12 | Зарплата: {1200:C}"));
-        }
-
-        [Test]
-        public void GetFullAddress_WithCompleteAddress_ReturnsFormattedString()
-        {
-            // Arrange
-            var address = new Address
-            {
-                Country = "Russia",
-                PostalCode = "123456",
-                City = "Moscow",
-                Street = "Main",
-                Building = "1",
-                Corpus = "A",
-                Office = "101"
-            };
-
-            // Act
-            var result = InformationWindow.GetFullAddress(address);
-
-            // Assert
-            Assert.That(result, Is.EqualTo("Russia, 123456, Moscow, Main, 1, корп. A, оф. 101"));
-        }
-    }
-}*/

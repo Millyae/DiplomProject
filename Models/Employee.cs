@@ -33,6 +33,10 @@ public partial class Employee
 
     public byte[] EmailEnc { get; set; }
 
+    public byte[] PhoneEncrypted { get; set; }
+
+    public byte[] EmailEncrypted { get; set; }
+
     public virtual Fullname IdFullnameNavigation { get; set; }
 
     public virtual ICollection<WorkSchedule> WorkSchedules { get; set; } = new List<WorkSchedule>();

@@ -206,6 +206,7 @@
                             <Menu Grid.Row="0" Background="#FF483D8B" BorderBrush="#FF6A5ACD">
                                 <MenuItem Header="Меню" Background="#FF483D8B" BorderBrush="#FF6A5ACD" FontSize="16" Foreground="#FFE5E4E4" FontFamily="Bodoni MT">
                                     <MenuItem Header="Добавить Услугу" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="AddNewRate_Click"/>
+                                    <MenuItem Header="Обновить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="UpdateRateButton_Click" />
                                     <MenuItem Header="Сохранить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="SaveRateButton_Click" />
                                     <MenuItem Header="Удалить" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="DeleteRateButton_Click_1"/>
                                     <MenuItem Header="Экспорт" Background="#FF483D8B" BorderBrush="#FF6A5ACD" Click="RateExport_Click" />
@@ -242,7 +243,7 @@
 
                                     <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" IsReadOnly="True" Width="*"/>
 
-                                    <DataGridTemplateColumn Header="Наименование услуги" Width="*">
+                                    <DataGridTemplateColumn Header="Услуга" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding ServiceName}" VerticalAlignment="Center"/>
@@ -251,10 +252,9 @@
                                         <DataGridTemplateColumn.CellEditingTemplate>
                                             <DataTemplate>
                                                 <ComboBox x:Name="PositionComboBoxInGrid" 
-                                      ItemsSource="{Binding DataContext.Services, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                      DisplayMemberPath="ServiceName"
-                                      SelectedValuePath="IdService"
-                                      SelectedValue="{Binding IdService, UpdateSourceTrigger=PropertyChanged}"/>
+                                              ItemsSource="{Binding DataContext.Services, RelativeSource={RelativeSource AncestorType=DataGrid}}" DisplayMemberPath="ServiceName"
+                                              SelectedValuePath="IdService"
+                                              SelectedValue="{Binding IdService, UpdateSourceTrigger=PropertyChanged}"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellEditingTemplate>
                                     </DataGridTemplateColumn>

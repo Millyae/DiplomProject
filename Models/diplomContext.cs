@@ -2,7 +2,9 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace DiplomProject.Models;
@@ -30,13 +32,28 @@ public partial class diplomContext : DbContext
 
     public virtual DbSet<Service> Services { get; set; }
 
+    public virtual DbSet<User> Users { get; set; }
+
     public virtual DbSet<WorkSchedule> WorkSchedules { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=db_diplom;uid=root;pwd=SQL123", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.40-mysql"));
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            optionsBuilder.UseMySql(
+                connectionString,
+                ServerVersion.Parse("8.0.40-mysql"));
+        }
+    }
+
+protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
             .UseCollation("utf8mb4_0900_ai_ci")
@@ -91,6 +108,9 @@ public partial class diplomContext : DbContext
             entity.Property(e => e.EmailEnc)
                 .HasMaxLength(255)
                 .HasColumnName("email_enc");
+            entity.Property(e => e.EmailEncrypted)
+                .HasMaxLength(255)
+                .HasColumnName("email_encrypted");
             entity.Property(e => e.Experience)
                 .HasColumnType("text")
                 .HasColumnName("experience");
@@ -109,6 +129,9 @@ public partial class diplomContext : DbContext
             entity.Property(e => e.PhoneEnc)
                 .HasMaxLength(255)
                 .HasColumnName("phone_enc");
+            entity.Property(e => e.PhoneEncrypted)
+                .HasMaxLength(255)
+                .HasColumnName("phone_encrypted");
             entity.Property(e => e.Salary)
                 .HasPrecision(10, 2)
                 .HasColumnName("salary");
@@ -209,6 +232,26 @@ public partial class diplomContext : DbContext
             entity.Property(e => e.ServiceName)
                 .HasMaxLength(100)
                 .HasColumnName("service_name");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Iduser).HasName("PRIMARY");
+
+            entity.ToTable("user");
+
+            entity.Property(e => e.Iduser).HasColumnName("iduser");
+            entity.Property(e => e.Login)
+                .IsRequired()
+                .HasMaxLength(45)
+                .HasColumnName("login");
+            entity.Property(e => e.Password)
+                .IsRequired()
+                .HasMaxLength(145)
+                .HasColumnName("password");
+            entity.Property(e => e.Role)
+                .HasMaxLength(35)
+                .HasColumnName("role");
         });
 
         modelBuilder.Entity<WorkSchedule>(entity =>
