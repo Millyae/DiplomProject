@@ -1464,14 +1464,6 @@ namespace DiplomProject
             }
         }
 
-
-        private void ExitButton_Click(object sender, RoutedEventArgs e)
-        {
-            LoginWindow loginWindow = new LoginWindow();
-            loginWindow.Show();
-            this.Close();
-        }
-
         private void SearchRateTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var searchText = SearchRateTextBox.Text.ToLower();
@@ -1513,5 +1505,30 @@ namespace DiplomProject
 
             RateDataGrid.ItemsSource = filtered;
         }
+
+        private void ExitButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoginWindow loginWindow = new LoginWindow();
+            loginWindow.Show();
+            this.Close();
+        }
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void RestoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.WindowState == WindowState.Normal)
+            {
+                this.WindowState = WindowState.Maximized;
+            }
+            else
+            {
+                this.WindowState = WindowState.Normal;
+            }
+        }
+
     }
 }
