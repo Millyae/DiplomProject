@@ -189,22 +189,9 @@
                             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10" VerticalAlignment="Top">
                                 <TextBox x:Name="SearchObjectTextBox" Width="300" Height="25" Margin="584,0,10,0"  VerticalAlignment="Top" Background="White" Foreground="Black" TextChanged="SearchObjectTextBox_TextChanged"/>
                             </StackPanel>
-                            <DataGrid x:Name="ObjectDataGrid" 
-          Grid.Row="1" 
-          Margin="40,30" 
-          FontSize="14" 
-          RowHeight="32" 
-          HorizontalAlignment="Stretch"
-          VerticalAlignment="Stretch"
-          HeadersVisibility="All"
-          HorizontalScrollBarVisibility="Visible"
-                                VerticalScrollBarVisibility="Auto"
-          CanUserAddRows="False"
-          ScrollViewer.CanContentScroll="True"
-          ScrollViewer.HorizontalScrollBarVisibility="Visible"
-          ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-
-                                <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
+                            <DataGrid x:Name="ObjectDataGrid" Grid.Row="1" Margin="40,30" FontSize="14" RowHeight="32" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HeadersVisibility="All" HorizontalScrollBarVisibility="Visible"
+                                VerticalScrollBarVisibility="Auto" CanUserAddRows="False" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
                                 <Button x:Name="DeleteObjectButton" Content="Удалить" Width="120" Height="40" Margin="10" Click="DeleteObjectButton_Click"/>
                                 <Button x:Name="SaveObjectButton" Content="Сохранить" Width="120" Height="40" Margin="10" Click="SaveObjectButton_Click"/>
                                 <Button x:Name="AddObjectButton" Content="Добавить" Width="120" Height="40" Margin="10" Click="AddObjectButton_Click"/>
@@ -234,24 +221,9 @@
                                 <TextBox x:Name="SearchRateTextBox" Width="250" Height="25" Margin="584,0,10,0" VerticalAlignment="Center" 
                      TextChanged="SearchRateTextBox_TextChanged" Background="White" Foreground="Black"/>
                             </StackPanel>
-                            <DataGrid x:Name="RateDataGrid" 
-          Grid.Row="1" 
-          Margin="10" 
-          FontSize="14"
-          RowHeight="32"
-          Background="White" 
-          Foreground="Black" 
-          AutoGenerateColumns="False"
-          CanUserAddRows="False" 
-          BeginningEdit="RateDataGrid_BeginningEdit"
-          SelectionChanged="RateDataGrid_SelectionChanged" 
-          SelectionMode="Single"
-          HorizontalAlignment="Stretch"
-          VerticalAlignment="Stretch"
-          HeadersVisibility="All"
-          HorizontalScrollBarVisibility="Visible"
-          VerticalScrollBarVisibility="Auto"
-          ScrollViewer.CanContentScroll="True">
+                            <DataGrid x:Name="RateDataGrid" Grid.Row="1" Margin="10" FontSize="14" RowHeight="32" Background="White" Foreground="Black" AutoGenerateColumns="False" CanUserAddRows="False" 
+                              BeginningEdit="RateDataGrid_BeginningEdit" SelectionChanged="RateDataGrid_SelectionChanged" SelectionMode="Single" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HeadersVisibility="All"
+                              HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Header="Объект" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
