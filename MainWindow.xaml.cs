@@ -151,7 +151,8 @@ namespace DiplomProject
                     Padding = new Thickness(10),
                     CornerRadius = new CornerRadius(5),
                     Background = Brushes.White,
-                    Cursor = Cursors.Hand
+                        Cursor = Cursors.Hand,
+                        Tag = employee
                 };
 
                 StackPanel employeeInfoPanel = new StackPanel
@@ -201,18 +202,21 @@ namespace DiplomProject
             {
                 bool isMatch = false;
 
-                if (employeeBorder.Child is StackPanel employeePanel)
+                if (employeeBorder.Tag is Employee employee)
                 {
-                    foreach (var child in employeePanel.Children)
+                    string fullName = $"{employee.IdFullnameNavigation?.LastName} {employee.IdFullnameNavigation?.FirstName} {employee.IdFullnameNavigation?.MiddleName}".ToLower();
+                    string email = employee.Email?.ToLower() ?? "";
+                    string phone = employee.Phone?.ToLower() ?? "";
+                    string metro = employee.Metro?.ToLower() ?? "";
+                    string schedule = employee.Schedules?.ToLower() ?? "";
+
+                    if (fullName.Contains(searchText) ||
+                        email.Contains(searchText) ||
+                        phone.Contains(searchText) ||
+                        metro.Contains(searchText) ||
+                        schedule.Contains(searchText))
                     {
-                        if (child is TextBlock textBlock)
-                        {
-                            if (textBlock.Text.ToLower().Contains(searchText))
-                            {
-                                isMatch = true;
-                                break;
-                            }
-                        }
+                        isMatch = true;
                     }
                 }
 
