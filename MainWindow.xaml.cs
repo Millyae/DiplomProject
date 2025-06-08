@@ -1,22 +1,13 @@
 ﻿using DiplomProject.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.VisualBasic;
-using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
 using System.Data;
 using System.IO;
-using System.Linq;
-using System.Windows;
 using OfficeOpenXml;
 using Microsoft.Win32;
-using System.Diagnostics.Eventing.Reader;
 using System.Windows.Input;
 using DiplomProject.ViewModels;
 using DiplomProject.Validation;
@@ -352,8 +343,6 @@ namespace DiplomProject
             }
         }
 
-
-
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentUserRole != "Admin")
@@ -399,7 +388,6 @@ namespace DiplomProject
                 }
             }
         }
-
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1346,7 +1334,6 @@ namespace DiplomProject
                 MessageBox.Show($"Ошибка импорта ставок: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
 
         public class ObjectComboBoxItem
         {

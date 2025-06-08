@@ -19,7 +19,6 @@ namespace DiplomProject
         private Employee _currentEmployee;
         private WorkScheduleDisplay _selectedSchedule;
 
-
         public InformationWindow(int employeeId, string userRoles)
         {
             InitializeComponent();
@@ -35,8 +34,6 @@ namespace DiplomProject
 
             WorkHoursDataGrid.SelectionChanged += WorkHoursDataGrid_SelectionChanged;
         }
-
-
 
         private void SetPermissionsBasedOnRole()
         {
