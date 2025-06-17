@@ -1521,5 +1521,45 @@ namespace DiplomProject
             }
         }
 
+        private void InformationButton_Click(object sender, RoutedEventArgs e)
+        {
+            var infoWindow = new Window
+            {
+                Title = "Справка по работе с программой",
+                Width = 600,
+                Height = 400,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this 
+            };
+
+            var scrollViewer = new ScrollViewer();
+            var textBlock = new TextBlock
+            {
+                Text = @"
+                1. Основные функции:
+                   - Добавление данных: нажмите кнопку 'Добавить' в соответствующем разделе
+                   - Редактирование: выделите запись и нажмите 'Изменить'
+                   - Удаление: выделите запись и нажмите 'Удалить'
+
+                2. Особенности работы:
+                   - Все изменения сохраняются автоматически
+                   - Для поиска используйте поле фильтрации вверху таблицы
+                   - Экспорт данных доступен через меню 'Файл' → 'Экспорт'
+
+                3. Контакты для поддержки:
+                   - Телефон: +7 (XXX) XXX-XX-XX
+                   - Email: support@example.com
+                ",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(15),
+                FontSize = 14
+            };
+
+            scrollViewer.Content = textBlock;
+            infoWindow.Content = scrollViewer;
+
+            infoWindow.ShowDialog();
+        }
+
     }
 }
